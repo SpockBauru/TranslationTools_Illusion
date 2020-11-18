@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Diagnostics;
-using System.Reflection;
 
 namespace ReleaseToolHS2
 {
@@ -13,13 +12,14 @@ namespace ReleaseToolHS2
         {
             Console.WriteLine("Release Tool for Hone Select 2 \r\n");
 
+            string inputRoot;
+
             //Read Current Folder from args, otherwise ask for user
-            string mainFolder;
-            if (args.Length != 0) mainFolder = args[0];
+            if (args.Length != 0) inputRoot = args[0];
             else
             {
                 Console.Write("Enter GitHub folder path: ");
-                mainFolder = Console.ReadLine();
+                inputRoot = Console.ReadLine();
                 Console.WriteLine();
             }
 
@@ -28,14 +28,13 @@ namespace ReleaseToolHS2
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            //Making the release folder path the same folder as the .exe
-            string exeFilePath = Assembly.GetExecutingAssembly().Location;
-            string thisFolder = Path.GetDirectoryName(exeFilePath);
-            string releaseFolder = Path.Combine(thisFolder, Path.GetFileName(mainFolder));
+            //Making the output folder path the same folder as the .exe
+            string thisFolder = AppDomain.CurrentDomain.BaseDirectory;
+            string outputRoot = Path.Combine(thisFolder, Path.GetFileName(inputRoot));
 
             //Config: Getting config dir. If it don't exist, quit!
-            var configDir = Path.Combine(mainFolder, "config");
-            if (!Directory.Exists(configDir) || string.IsNullOrEmpty(mainFolder))
+            var configInput = Path.Combine(inputRoot, "config");
+            if (!Directory.Exists(configInput) || string.IsNullOrEmpty(inputRoot))
             {
                 Console.WriteLine("Not a valid folder");
                 Console.ReadKey();
@@ -43,7 +42,7 @@ namespace ReleaseToolHS2
             }
 
             //Config: Getting language, if not set, quit!
-            string configFile = Path.Combine(configDir, "AutoTranslatorConfig.ini");
+            string configFile = Path.Combine(configInput, "AutoTranslatorConfig.ini");
             string language = SearchINI(configFile, "Language");
             if (string.IsNullOrEmpty(language))
             {
@@ -53,51 +52,75 @@ namespace ReleaseToolHS2
             }
 
             //Config: Copy translation file
-            string configDirOutput = Path.Combine(releaseFolder, "BepInEx", "config");
-            Directory.CreateDirectory(configDirOutput);
-            File.Copy(Path.Combine(configDir, "AutoTranslatorConfig.ini"), Path.Combine(configDirOutput, "AutoTranslatorConfig.ini"));
+            string configOutput = Path.Combine(outputRoot, "BepInEx", "config");
+            Directory.CreateDirectory(configOutput);
+            File.Copy(configFile, Path.Combine(configOutput, "AutoTranslatorConfig.ini"));
 
 
-            //RedirectedResources: Clear empty lines and write in the new release folder
-            Console.WriteLine("Cleaning Commented lines in RedirectedResources \r\n");
-            string resourcesDir = Path.Combine(mainFolder, "Translation", language, "RedirectedResources");
-            string resourcesDirOutput = Path.Combine(releaseFolder, "BepInEx", "Translation", language, "RedirectedResources");
-            ClearFolders(resourcesDir, resourcesDirOutput);
+            //REDIRECTED RESOURCES
+            string resourcesInput = Path.Combine(inputRoot, "Translation", language, "RedirectedResources");
+            if (Directory.Exists(resourcesInput))
+            {
+                //RedirectedResources: Clear empty lines and write in the new work folder
+                Console.WriteLine("Cleaning Commented lines in RedirectedResources \r\n");
+                string workFolder = Path.Combine(outputRoot, "workFolder");
+                ClearFolders(resourcesInput, workFolder);
 
-            //RedirectedResources: make a zip and clear folder
-            Console.WriteLine("Making the .zip for RedirectedResources \r\n");
-            ZipFile.CreateFromDirectory(resourcesDirOutput, Path.Combine(releaseFolder, "RedirectedResources.zip"));
-            Directory.Delete(Path.Combine(resourcesDirOutput, "assets"), true);
-            File.Move(Path.Combine(releaseFolder, "RedirectedResources.zip"), Path.Combine(resourcesDirOutput, "RedirectedResources.zip"));
-
-
-            //Text: Creating names for source and destination folders
-            Console.WriteLine("Copying Text folder \r\n");
-            string textDir = Path.Combine(mainFolder, "Translation", language, "Text");
-            string textDirOutput = Path.Combine(releaseFolder, "BepInEx", "Translation", language, "Text");
-
-            //Text: Create Folders
-            CopyAllFolder(textDir, textDirOutput);
+                //RedirectedResources: make a zip and clear folder
+                Console.WriteLine("Making the .zip for RedirectedResources \r\n");
+                string resourcesOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "RedirectedResources");
+                Directory.CreateDirectory(resourcesOutput);
+                ZipFile.CreateFromDirectory(workFolder, Path.Combine(resourcesOutput, "RedirectedResources.zip"));
+                Directory.Delete(Path.Combine(workFolder), true);
+            }
 
 
-            //Texture: Creating names for source and destination folders
-            Console.WriteLine("Copying Texture folder \r\n");
-            string textureDir = Path.Combine(mainFolder, "Translation", language, "Texture");
-            string textureDirOutput = Path.Combine(releaseFolder, "BepInEx", "Translation", language, "Texture");
+            //TEXT
+            string textInput = Path.Combine(inputRoot, "Translation", language, "Text");
+            if (Directory.Exists(textInput))
+            {
+                //Creating a .zip with text folder
+                Console.WriteLine("Making the Text folder .zip \r\n");
+                string textOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Text");
+                Directory.CreateDirectory(textOutput);
+                ZipFile.CreateFromDirectory(textInput, Path.Combine(textOutput, "Text.zip"));
+            }
 
-            //Texture: Create Folders
-            CopyAllFolder(textureDir, textureDirOutput);
 
-            //Copy Readme.md and LICENCE
-            File.Copy(Path.Combine(mainFolder, "README.md"), Path.Combine(releaseFolder, "README.md"));
-            File.Copy(Path.Combine(mainFolder, "LICENSE"), Path.Combine(releaseFolder, "LICENSE"));
+            //TEXTURE
+            string textureInput = Path.Combine(inputRoot, "Translation", language, "Texture");
+            if (Directory.Exists(textureInput))
+            {
+                //Creating a .zip with text folder
+                Console.WriteLine("Making the Texture folder .zip \r\n");
+                string textureOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Texture");
+                Directory.CreateDirectory(textureOutput);
+                ZipFile.CreateFromDirectory(textureInput, Path.Combine(textureOutput, "Texture.zip"));
+            }
 
 
-            //Making the final zip and cleaning the work folder
-            string releaseName = releaseFolder + "_Release_" + DateTime.Now.ToString("yyyy-MM-dd") + ".zip";
-            Console.WriteLine("Making " + Path.GetFileName(releaseName));
-            ZipFile.CreateFromDirectory(releaseFolder, releaseName + "\r\n");
-            Directory.Delete(releaseFolder, true);
+            //Copy Readme.md
+            string readmeInput = Path.Combine(inputRoot, "README.md");
+            if (Directory.Exists(Path.GetDirectoryName(readmeInput)))
+            {
+                string readmeOutput = Path.Combine(outputRoot, "README.md");
+                File.Copy(readmeInput, readmeOutput);
+            }
+
+            //Copy LICENSE
+            string licenceInput = Path.Combine(inputRoot, "LICENSE");
+            if (Directory.Exists(Path.GetDirectoryName(licenceInput)))
+            {
+                string licenceOutput = Path.Combine(outputRoot, "LICENSE");
+                File.Copy(licenceInput, licenceOutput);
+            }
+
+
+            //Making the final zip and cleaning the output folder
+            string releaseName = outputRoot + "_Release_" + DateTime.Now.ToString("yyyy-MM-dd") + ".zip";
+            Console.WriteLine("Making " + Path.GetFileName(releaseName) + "\r\n");
+            ZipFile.CreateFromDirectory(outputRoot, releaseName);
+            Directory.Delete(outputRoot, true);
 
             //Finishing
             stopWatch.Stop();
@@ -161,27 +184,6 @@ namespace ReleaseToolHS2
                 }
             }
 
-        }
-
-
-        static void CopyAllFolder(string fromFolder, string toFolder)
-        {
-            //Create Folders
-            Directory.CreateDirectory(toFolder);
-            string[] allDir = Directory.GetDirectories(fromFolder, "*", SearchOption.AllDirectories);
-            foreach (string oldDir in allDir)
-            {
-                string newDir = oldDir.Replace(fromFolder, toFolder);
-                Directory.CreateDirectory(newDir);
-            }
-
-            //Copy files
-            string[] allFiles = Directory.GetFiles(fromFolder, "*.*", SearchOption.AllDirectories);
-            foreach (string fromFile in allFiles)
-            {
-                string toFile = fromFile.Replace(fromFolder, toFolder);
-                File.Copy(fromFile, toFile, true);
-            }
         }
 
     }
