@@ -10,11 +10,11 @@ namespace ReleaseToolHS2
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Release Tool for Hone Select 2 \r\n");
+            Console.WriteLine("Release Tool for Honey Select 2 \r\n");
 
             string inputRoot;
 
-            //Read Current Folder from args, otherwise ask for user
+            //Read input folder from args, otherwise ask for user
             if (args.Length != 0) inputRoot = args[0];
             else
             {
@@ -28,20 +28,12 @@ namespace ReleaseToolHS2
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
-            //Making the output folder path the same folder as the .exe
+            //Making the output path the same as the .exe
             string thisFolder = AppDomain.CurrentDomain.BaseDirectory;
-            string outputRoot = Path.Combine(thisFolder, Path.GetFileName(inputRoot));
-
-            //Config: Getting config dir. If it don't exist, quit!
-            var configInput = Path.Combine(inputRoot, "config");
-            if (!Directory.Exists(configInput) || string.IsNullOrEmpty(inputRoot))
-            {
-                Console.WriteLine("Not a valid folder");
-                Console.ReadKey();
-                Environment.Exit(0);
-            }
+            string outputRoot = Path.Combine(thisFolder, "workFolder");
 
             //Config: Getting language, if not set, quit!
+            var configInput = Path.Combine(inputRoot, "config");            
             string configFile = Path.Combine(configInput, "AutoTranslatorConfig.ini");
             string language = SearchINI(configFile, "Language");
             if (string.IsNullOrEmpty(language))
@@ -50,6 +42,7 @@ namespace ReleaseToolHS2
                 Console.ReadKey();
                 Environment.Exit(0);
             }
+            Console.WriteLine("Language: " + language + "\r\n");
 
             //Config: Copy translation file
             string configOutput = Path.Combine(outputRoot, "BepInEx", "config");
@@ -66,12 +59,12 @@ namespace ReleaseToolHS2
                 string workFolder = Path.Combine(outputRoot, "workFolder");
                 ClearFolders(resourcesInput, workFolder);
 
-                //RedirectedResources: make a zip and clear folder
+                //RedirectedResources: make a zip and clear the work folder
                 Console.WriteLine("Making the .zip for RedirectedResources \r\n");
                 string resourcesOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "RedirectedResources");
                 Directory.CreateDirectory(resourcesOutput);
                 ZipFile.CreateFromDirectory(workFolder, Path.Combine(resourcesOutput, "RedirectedResources.zip"));
-                Directory.Delete(Path.Combine(workFolder), true);
+                Directory.Delete(workFolder, true);
             }
 
 
@@ -91,7 +84,7 @@ namespace ReleaseToolHS2
             string textureInput = Path.Combine(inputRoot, "Translation", language, "Texture");
             if (Directory.Exists(textureInput))
             {
-                //Creating a .zip with text folder
+                //Creating a .zip with Texture folder
                 Console.WriteLine("Making the Texture folder .zip \r\n");
                 string textureOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Texture");
                 Directory.CreateDirectory(textureOutput);
@@ -99,7 +92,7 @@ namespace ReleaseToolHS2
             }
 
 
-            //Copy Readme.md
+            //Copy README.md
             string readmeInput = Path.Combine(inputRoot, "README.md");
             if (Directory.Exists(Path.GetDirectoryName(readmeInput)))
             {
@@ -117,10 +110,12 @@ namespace ReleaseToolHS2
 
 
             //Making the final zip and cleaning the output folder
-            string releaseName = outputRoot + "_Release_" + DateTime.Now.ToString("yyyy-MM-dd") + ".zip";
+            string translationName = Path.GetFileName(inputRoot);
+            translationName.Replace("-master", "");
+            string releaseName = thisFolder + translationName + "_Release_" + DateTime.Now.ToString("yyyy-MM-dd") + ".zip";
             Console.WriteLine("Making " + Path.GetFileName(releaseName) + "\r\n");
             ZipFile.CreateFromDirectory(outputRoot, releaseName);
-            Directory.Delete(outputRoot, true);
+            Directory.Delete(Path.Combine(thisFolder, "workFolder"), true);
 
             //Finishing
             stopWatch.Stop();
@@ -155,19 +150,19 @@ namespace ReleaseToolHS2
         static void ClearFolders(string inputDir, string outputDir)
         {
             //Getting all files
-            string[] filesInFolder = Directory.GetFiles(inputDir, "*.txt", SearchOption.AllDirectories);
+            string[] allFiles = Directory.GetFiles(inputDir, "*.txt", SearchOption.AllDirectories);
 
-            //Read each file from input directory and write output directory
-            foreach (string file in filesInFolder)
+            //Read each file from input directory and write in output directory only if its not empty
+            foreach (string currentFile in allFiles)
             {
-                string[] currentFile = File.ReadAllLines(file);
+                string[] allLines = File.ReadAllLines(currentFile);
                 List<string> outputFile = new List<string>();
 
                 //seek all lines of the current file
                 bool notEmpty = false;
-                foreach (string line in currentFile)
+                foreach (string line in allLines)
                 {
-                    if ((!string.IsNullOrEmpty(line)) && (!line[0].Equals('/')))
+                    if ((!string.IsNullOrEmpty(line)) && (!line.StartsWith("//")))
                     {
                         outputFile.Add(line);
                         notEmpty = true;
@@ -177,7 +172,7 @@ namespace ReleaseToolHS2
                 //writing file to a new dir
                 if (notEmpty)
                 {
-                    string outputPath = file.Replace(inputDir, outputDir);
+                    string outputPath = currentFile.Replace(inputDir, outputDir);
                     string[] outputFileText = outputFile.ToArray();
                     Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
                     File.WriteAllLines(outputPath, outputFileText);
