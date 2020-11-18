@@ -17,7 +17,7 @@
 
 ## Translate Duplicates
 
-  See if an untranslated line has been translated before and write that translation. If there are several translations for the same sentence, only the first one is used. Useful for RedirectedResources folder. Use with caution!
+  Searches an entire folder if an untranslated line has been translated in other place and writes that translation. If there are several translations for the same sentence, only the first one is used. Useful for RedirectedResources folder. Use with caution!
   
   **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r2)**
 
