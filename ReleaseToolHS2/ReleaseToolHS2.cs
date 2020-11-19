@@ -33,7 +33,7 @@ namespace ReleaseToolHS2
             string outputRoot = Path.Combine(thisFolder, "workFolder");
 
             //Config: Getting language, if not set, quit!
-            var configInput = Path.Combine(inputRoot, "config");            
+            var configInput = Path.Combine(inputRoot, "config");
             string configFile = Path.Combine(configInput, "AutoTranslatorConfig.ini");
             string language = SearchINI(configFile, "Language");
             if (string.IsNullOrEmpty(language))
@@ -73,12 +73,24 @@ namespace ReleaseToolHS2
             if (Directory.Exists(textInput))
             {
                 //Creating a .zip with text folder
-                Console.WriteLine("Making the Text folder .zip \r\n");
+                Console.WriteLine("Copying the Text folder \r\n");
                 string textOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Text");
                 Directory.CreateDirectory(textOutput);
-                ZipFile.CreateFromDirectory(textInput, Path.Combine(textOutput, "Text.zip"));
+                CopyAll(textInput, textOutput);
             }
 
+
+            //MACHINE TRANSLATIONS
+            string machineInput = Path.Combine(inputRoot, "Translation", language, "Text", "zz_MachineTranslations");
+            if (Directory.Exists(machineInput))
+            {
+                //Creating a .zip with text folder
+                Console.WriteLine("Making the Machine Translations .zip \r\n");
+                string machineOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Text", "zz_MachineTranslations");
+                Directory.Delete(machineOutput,true);
+                Directory.CreateDirectory(machineOutput);
+                ZipFile.CreateFromDirectory(machineInput, Path.Combine(machineOutput, "zz_MachineTranslations.zip"));
+            }
 
             //TEXTURE
             string textureInput = Path.Combine(inputRoot, "Translation", language, "Texture");
@@ -88,11 +100,11 @@ namespace ReleaseToolHS2
                 Console.WriteLine("Making the Texture folder .zip \r\n");
                 string textureOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Texture");
                 Directory.CreateDirectory(textureOutput);
-                ZipFile.CreateFromDirectory(textureInput, Path.Combine(textureOutput, "Texture.zip"));
+                CopyAll(textureInput, textureOutput);
             }
 
 
-            //Copy README.md
+            //README.md
             string readmeInput = Path.Combine(inputRoot, "README.md");
             if (Directory.Exists(Path.GetDirectoryName(readmeInput)))
             {
@@ -100,7 +112,7 @@ namespace ReleaseToolHS2
                 File.Copy(readmeInput, readmeOutput);
             }
 
-            //Copy LICENSE
+            //LICENSE
             string licenceInput = Path.Combine(inputRoot, "LICENSE");
             if (Directory.Exists(Path.GetDirectoryName(licenceInput)))
             {
@@ -177,6 +189,23 @@ namespace ReleaseToolHS2
                     Directory.CreateDirectory(Path.GetDirectoryName(outputPath));
                     File.WriteAllLines(outputPath, outputFileText);
                 }
+            }
+
+        }
+
+        static void CopyAll(string inputDir, string outputDir)
+        {
+            //Copy all Folders
+            string[] allFolders = Directory.GetDirectories(inputDir, "*", SearchOption.AllDirectories);
+            foreach (string folder in allFolders)
+            {
+                    Directory.CreateDirectory(folder.Replace(inputDir, outputDir));
+            }
+            //Copy all Files
+            string[] allFiles = Directory.GetFiles(inputDir, "*.*", SearchOption.AllDirectories);
+            foreach (string file in allFiles)
+            {
+                    File.Copy(file, file.Replace(inputDir, outputDir), true);
             }
 
         }
