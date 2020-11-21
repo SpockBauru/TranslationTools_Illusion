@@ -84,8 +84,8 @@ namespace ReleaseToolHS2
             string machineInput = Path.Combine(inputRoot, "Translation", language, "Text", "zz_MachineTranslations");
             if (Directory.Exists(machineInput))
             {
-                //Creating a .zip with machine folder
-                Console.WriteLine("Making the .zip for Machine Translations \r\n");
+                //Creating a .zip with text folder
+                Console.WriteLine("Making the Machine Translations .zip \r\n");
                 string machineOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Text", "zz_MachineTranslations");
                 Directory.Delete(machineOutput,true);
                 Directory.CreateDirectory(machineOutput);
@@ -97,7 +97,7 @@ namespace ReleaseToolHS2
             if (Directory.Exists(textureInput))
             {
                 //Creating a .zip with Texture folder
-                Console.WriteLine("Copying the Texture folder \r\n");
+                Console.WriteLine("Making the Texture folder .zip \r\n");
                 string textureOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Texture");
                 Directory.CreateDirectory(textureOutput);
                 CopyAll(textureInput, textureOutput);
