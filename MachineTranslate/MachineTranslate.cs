@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Diagnostics;
+using System.Threading;
 
 namespace MachineTranslate
 {
@@ -17,7 +18,7 @@ namespace MachineTranslate
         {
             //Defining languages
             string fromLanguage = "ja";
-            string toLanguage = "pt";
+            string toLanguage = "en";
 
             //Read Current Folder
             string mainFolder;
@@ -86,6 +87,7 @@ namespace MachineTranslate
             //Translating via GoogleTranslate
             Console.WriteLine("Translating lines:");
             int translationSize = allUntranslated.Count;
+            int sleepTimer = 0;
 
             for (int i = 0; i < translationSize; i++)
             {
@@ -99,6 +101,20 @@ namespace MachineTranslate
 
                 string displayCount = "\rLine " + (i + 1) + " of " + translationSize;
                 Console.Write(displayCount);
+
+                //Google translate limit of 5 translations per second
+                Thread.Sleep(200);
+
+                //Sleep after 100 translations so your ip is not banned
+                sleepTimer++;
+                if (sleepTimer>=100)
+                {
+                    Console.WriteLine();
+                    Console.WriteLine("sleeping for 10 seconds so Google Translate don't ban your IP");
+                    sleepTimer = 0;
+                    Thread.Sleep(10000);
+                }
+
             }
             Console.WriteLine();
 
