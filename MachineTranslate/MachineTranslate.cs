@@ -11,7 +11,7 @@ namespace MachineTranslate
         //Translated Dictionary
         private static Dictionary<string, string> allTranslated = new Dictionary<string, string>();
         //Translated Dictionary
-        private static Dictionary<string, string> allUnranslated = new Dictionary<string, string>();
+        private static Dictionary<string, string> allUntranslated = new Dictionary<string, string>();
 
         static void Main(string[] args)
         {
@@ -53,65 +53,71 @@ namespace MachineTranslate
             //Getting all files from folder and subfolders
             FileInfo[] filesInFolder = currDir.GetFiles("*.txt", SearchOption.AllDirectories);
 
-            //populating the translated and untranslated dictionaries
-            Console.WriteLine("Searching for all translations...");
-            foreach (FileInfo fileName in filesInFolder)
+            //populating the Translated dictionary with unique translations
+            Console.WriteLine("Searching for translations in all files");
+            for (int i = 0; i < filesInFolder.Length; i++)
             {
-                UpdateDictionaries(fileName.FullName);
+                string fileName = filesInFolder[i].FullName;
+                UpdateTranslatedDictionary(fileName);
+
+                string displayFileNumber = "\rFile " + (i + 1).ToString() + " of " + filesInFolder.Length.ToString();
+                Console.Write(displayFileNumber);
             }
+            Console.WriteLine();
 
-            //Creating string arrays with translations
-            string[] outputTranslated = DictionaryToStringArray(allTranslated);
-            string[] outputUntranslated = DictionaryToStringArray(allUnranslated);
+            //populating the Untranslated dictionary with unique entries that are not in treanslated dictionary
+            Console.WriteLine("Searching for Untranslated lines");
+            for (int i = 0; i < filesInFolder.Length; i++)
+            {
+                string fileName = filesInFolder[i].FullName;
+                UpdateUntranslatedDictionary(fileName);
 
-            //Writing translated lines
-            Console.WriteLine("Writing files");
-            string outputFolder = mainFolder + "\\MachineTranslation\\";
+                string displayFileNumber = "\rFile " + (i + 1).ToString() + " of " + filesInFolder.Length.ToString();
+                Console.Write(displayFileNumber);
+            }
+            Console.WriteLine();
+
+            //setting Output folder and file
+            string outputFolder = mainFolder + "\\MachineTranslation\\";            
             Directory.CreateDirectory(outputFolder);
-            File.WriteAllLines(outputFolder + "Translated.txt", outputTranslated);
-            File.WriteAllLines(outputFolder + "Untranslated.txt", outputUntranslated);
+
+            string OutputFile = outputFolder + "MachineTranslation.txt";
 
             //Translating via GoogleTranslate
-            int translationSize = outputUntranslated.Length;
-            string[] machineTranslations = new string[translationSize];
+            Console.WriteLine("Translating lines:");
+            int translationSize = allUntranslated.Count;
+
             for (int i = 0; i < translationSize; i++)
             {
-                string line = outputUntranslated[i].Replace("/", "");                
-                line = line.Replace("=", "");
+                string line = allUntranslated.ElementAt(i).Key;
 
                 string translatedLine;
                 translatedLine = GoogleTranslate.Translate(fromLanguage, toLanguage, line);
-                machineTranslations[i] = line + "=" + translatedLine;
+                translatedLine = line + "="+ translatedLine;
 
-                string displayCount = "\rLine " + (i+1) + " of " + translationSize;
+                File.AppendAllText(OutputFile, translatedLine + Environment.NewLine);
+
+                string displayCount = "\rLine " + (i + 1) + " of " + translationSize;
                 Console.Write(displayCount);
             }
-
-            File.WriteAllLines(outputFolder + "MachineTranslation.txt", machineTranslations);
-            stopWatch.Stop();
             Console.WriteLine();
-            Console.WriteLine(stopWatch.Elapsed);
+
+            //ending console dialogues
+            stopWatch.Stop();
+            
+            string display= "Elapsed time " + stopWatch.Elapsed;
+            Console.WriteLine(display);
+            Console.WriteLine("Press any key to exit");
             Console.ReadKey();
         }
 
-        static string[] DictionaryToStringArray(Dictionary<string, string> dictionary)
-        {
-            int size = dictionary.Keys.Count;
-            string[] stringArray = new string[size];
-            for (int i = 0; i < size; i++)
-            {
-                stringArray[i] = dictionary.ElementAt(i).Key + "=" + dictionary.ElementAt(i).Value;
-            }
-            return stringArray;
-        }
-
-        static void UpdateDictionaries(string fileName)
+        static void UpdateTranslatedDictionary(string fileName)
         {
             //Read Current File
             string[] currentFile = File.ReadAllLines(fileName);
 
             //seek all lines of the current file
-            for (int i = 0; i <= currentFile.Length - 1; i++)
+            for (int i = 0; i < currentFile.Length; i++)
             {
                 string line = currentFile[i];
 
@@ -124,13 +130,27 @@ namespace MachineTranslate
                         allTranslated.Add(parts[0], parts[1]);
                     }
                 }
+            }
+        }
+
+        static void UpdateUntranslatedDictionary(string fileName)
+        {
+            //Read Current File
+            string[] currentFile = File.ReadAllLines(fileName);
+
+            //seek all lines of the current file
+            for (int i = 0; i < currentFile.Length; i++)
+            {
+                string line = currentFile[i];
+
                 //null check and add Commented lines to Untranslated dictionary
-                else if ((!string.IsNullOrEmpty(line)) && (line[0].Equals('/')))
+                if ((!string.IsNullOrEmpty(line)) && (line[0].Equals('/')))
                 {
+                    line = line.Replace("/", "");
                     string[] parts = line.Split('=');
-                    if (!allUnranslated.ContainsKey(parts[0]) && (parts.Length == 2))
+                    if (!allUntranslated.ContainsKey(parts[0]) && !allTranslated.ContainsKey(parts[0]) && (parts.Length == 2))
                     {
-                        allUnranslated.Add(parts[0], parts[1]);
+                        allUntranslated.Add(parts[0], parts[1]);
                     }
                 }
             }
