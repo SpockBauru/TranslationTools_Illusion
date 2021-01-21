@@ -7,11 +7,11 @@ namespace MachineTranslate
     public class BingTranslator
     {
         //Bing needs to get the IG and IID codes from the website before translate
-        public static string[] Setup(HttpClient client)
+        public static string[] Setup(HttpClient httpClient)
         {
             
             //HttpClient client = new HttpClient();
-            var html = client.GetStringAsync("https://www.bing.com/translator").Result;
+            var html = httpClient.GetStringAsync("https://www.bing.com/translator").Result;
 
             //Getting the IG code
             string _IG = searchContent("\",IG:\"", html);
