@@ -131,17 +131,17 @@ namespace MachineTranslate
                 Console.Write(displayCount);
 
                 //Google translate limit of  translations per second
-                Thread.Sleep(100);
+                Thread.Sleep(200);
 
-                ////Sleep after 100 translations so your ip is not banned
-                //sleepTimer++;
-                //if (sleepTimer>=100)
-                //{
-                //    Console.WriteLine();
-                //    Console.WriteLine("sleeping for 10 seconds so Google Translate don't ban your IP");
-                //    sleepTimer = 0;
-                //    Thread.Sleep(10000);
-                //}
+                //Sleep after 100 translations so your ip is not banned
+                sleepTimer++;
+                if (sleepTimer >= 100)
+                {
+                    Console.Write(" Sleeping for 20 seconds so Google Translate don't ban your IP");
+                    sleepTimer = 0;
+                    Thread.Sleep(20000);
+                    Console.Write("\r                                                                               ");
+                }
             }
             Console.WriteLine();
 
@@ -163,12 +163,15 @@ namespace MachineTranslate
                 {
                     string line = currentFile[j];
                     string[] parts = line.Split('=');
-                    string key = parts[0];
-                    string value = parts[1];
-                    if (!machineTranslated.ContainsKey(key) && (parts.Length == 2))
-                        machineTranslated.Add(key, value);
-                    else if (machineTranslated.ContainsKey(key) && (parts.Length == 2))
-                        machineTranslated[key] = value;
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0];
+                        string value = parts[1];
+                        if (!machineTranslated.ContainsKey(key))
+                            machineTranslated.Add(key, value);
+                        else if (machineTranslated.ContainsKey(key))
+                            machineTranslated[key] = value;
+                    }
                 }
             }
 
@@ -182,25 +185,62 @@ namespace MachineTranslate
                     string key = machineTranslated.ElementAt(i).Key;
                     string value = machineTranslated.ElementAt(i).Value;
                     string error = errorList[j];
-                    if (value.Contains(error))
+                    if (value.Contains(error) && !translationErrors.ContainsKey(key))
                     {
                         translationErrors.Add(key, value);
                     }
                 }
             }
 
-            //Translating errors with bing translate
+            //Translating errors with Bing translate
             string bingTranslationsFile = Path.Combine(outputFolder,"2-BingTranslateRAW.txt");
             int errorSize = translationErrors.Count;
 
             Console.WriteLine("Trying to translate errors with Bing translator");
 
+            int bingIndex = 0;
             for (int i = 0; i < errorSize; i++)
             {
+                string[] setup = new string[2];
+                if (i==0)
+                {
+                    setup = BingTranslator.Setup(httpClient);
+                }
                 string line = translationErrors.ElementAt(i).Key;
-
                 string translatedLine;
-                translatedLine = BingTranslator.Translate(fromLanguage, toLanguage, line);
+
+                //Translating text between parenthesis separately
+                if (line.IndexOfAny("（(".ToCharArray()) != -1)
+                {
+                    int startindex = line.IndexOfAny("（(".ToCharArray());
+                    int endindex = line.IndexOfAny("）)".ToCharArray());
+                    int lineLenght = line.Length-1;
+
+                    string before = line.Substring(0, startindex);
+                    string translatedBefore= BingTranslator.Translate(fromLanguage, toLanguage, before, httpClient, setup, bingIndex);
+                    bingIndex++;
+
+                    startindex++;
+                    string between = line.Substring(startindex, endindex - startindex);
+                    string translatedBetween= BingTranslator.Translate(fromLanguage, toLanguage, between, httpClient, setup, bingIndex);
+                    bingIndex++;
+
+                    string after = line.Substring(endindex + 1, lineLenght - endindex);
+                    string translatedAfter = "";
+                    if (after.Length > 0)
+                    {
+                        translatedAfter = BingTranslator.Translate(fromLanguage, toLanguage, after, httpClient, setup, bingIndex);
+                        bingIndex++;
+                    }
+
+                    translatedLine = translatedBefore + " (" + translatedBetween + ") " + translatedAfter;
+                }
+                else
+                {
+                    translatedLine = BingTranslator.Translate(fromLanguage, toLanguage, line, httpClient, setup, bingIndex);
+                    bingIndex++;
+                }                
+                
                 translatedLine = line + "=" + translatedLine;
 
                 File.AppendAllText(bingTranslationsFile, translatedLine + Environment.NewLine);
@@ -240,18 +280,50 @@ namespace MachineTranslate
             File.WriteAllLines(correctedMachineFile, correctedMachineString);
 
 
-
-
-
             //==================== Fixing Style Errors ====================
             Dictionary<string, string> substitutions = new Dictionary<string, string>();
-            
 
+            Console.WriteLine("Fixing Style errors from Substitutions.txt");
 
+            //Readubg Substitutions file
+            string subtitutionsFile = Path.Combine(thisFolder, "Substitutions.txt");
+            string[] substitutionsString = File.ReadAllLines(subtitutionsFile);
+            for (int i = 0; i < substitutionsString.Length; i++)
+            {
+                string line = substitutionsString[i];
+                string[] parts = line.Split('=');
+                if (parts.Length == 2)
+                {
+                    string key = parts[0];
+                    string value = parts[1];
+                    substitutions.Add(key, value);
+                }
+            }
 
+            //Fixing machineTranslated dictionary
+            for (int i= 0; i < machineTranslated.Count; i++)
+            {
+                string key= machineTranslated.ElementAt(i).Key;
+                string text = machineTranslated.ElementAt(i).Value;
 
+                for (int j = 0; j < substitutions.Count; j++)
+                {
+                    string from = substitutions.ElementAt(j).Key;
+                    string to = substitutions.ElementAt(j).Value;
+                    text= text.Replace(from, to);
+                }
 
+                machineTranslated[key] = text;
+            }
 
+            //Writing final file
+            string machineTranslationsFinalFile = Path.Combine(outputFolder, "MachineTranslationsFinal.txt");
+            string[] machineTranslationsFinalString = new string[machineTranslated.Count];
+            for (int i = 0; i < machineTranslated.Count; i++)
+            {
+                machineTranslationsFinalString[i] = machineTranslated.ElementAt(i).Key + "=" + machineTranslated.ElementAt(i).Value;
+            }
+            File.WriteAllLines(machineTranslationsFinalFile, machineTranslationsFinalString);
 
 
             //==================== Ending Console Dialogues ====================
@@ -279,9 +351,14 @@ namespace MachineTranslate
                 if ((!string.IsNullOrEmpty(line)) && (!line[0].Equals('/')))
                 {
                     string[] parts = line.Split('=');
-                    if (!allTranslated.ContainsKey(parts[0]) && (parts.Length == 2))
+                    if (parts.Length == 2)
                     {
-                        allTranslated.Add(parts[0], parts[1]);
+                        string key = parts[0];
+                        string value = parts[1];
+                        if (!allTranslated.ContainsKey(key))
+                        {
+                            allTranslated.Add(key, value);
+                        }
                     }
                 }
             }
@@ -302,9 +379,14 @@ namespace MachineTranslate
                 {
                     line = line.Replace("/", "");
                     string[] parts = line.Split('=');
-                    if (!allUntranslated.ContainsKey(parts[0]) && !allTranslated.ContainsKey(parts[0]) && (parts.Length == 2))
+                    if (parts.Length == 2)
                     {
-                        allUntranslated.Add(parts[0], parts[1]);
+                        string key = parts[0];
+                        string value = parts[1];
+                        if (!allUntranslated.ContainsKey(key) && !allTranslated.ContainsKey(key))
+                        {
+                            allUntranslated.Add(key, value);
+                        }
                     }
                 }
             }

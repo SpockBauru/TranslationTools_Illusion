@@ -6,10 +6,11 @@ namespace MachineTranslate
 {
     public class BingTranslator
     {
-        public static string Translate(string fromLanguage, string toLanguage, string UntranslatedText)
+        //Bing needs to get the IG and IID codes from the website before translate
+        public static string[] Setup(HttpClient client)
         {
-            //Bing needs to get the IG and IID codes from the website
-            HttpClient client = new HttpClient();
+            
+            //HttpClient client = new HttpClient();
             var html = client.GetStringAsync("https://www.bing.com/translator").Result;
 
             //Getting the IG code
@@ -17,9 +18,15 @@ namespace MachineTranslate
 
             //Getting IID
             string _IID = searchContent("data-iid=\"", html);
-
+            string[] setup =new string[] { _IG, _IID };
+            return setup;
+        }
+        public static string Translate(string fromLanguage, string toLanguage, string UntranslatedText, HttpClient client, string[] setup, int count)
+        {
+            string _IG = setup[0];
+            string _IID = setup[1];
             //Making the url with the IG and IID 
-            string url = "https://www.bing.com/ttranslatev3?isVertical=1&&IG=" + _IG + "&IID=" + _IID + "." + "1";
+            string url = "https://www.bing.com/ttranslatev3?isVertical=1&&IG=" + _IG + "&IID=" + _IID + "." + count.ToString();
 
             //Making the Data format
             var data = new Dictionary<string, string>
