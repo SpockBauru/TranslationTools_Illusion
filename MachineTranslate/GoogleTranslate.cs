@@ -7,7 +7,7 @@ namespace MachineTranslate
 {
     public class GoogleTranslate
     {
-        public static string Translate(string fromLanguage, string toLanguage, string input)
+        public static string Translate(string fromLanguage, string toLanguage, string input, HttpClient httpClient)
         {
             //Making the url
             string url = String.Format
@@ -18,7 +18,7 @@ namespace MachineTranslate
               Uri.EscapeDataString(input));
 
             //Requesting translations synchronously 
-            HttpClient httpClient = new HttpClient();
+            //HttpClient httpClient = new HttpClient();
             var response = httpClient.GetAsync(url).Result;
 
             string result = "";

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Diagnostics;
 using System.Threading;
+using System.Net.Http;
 
 namespace MachineTranslate
 {
@@ -11,23 +12,32 @@ namespace MachineTranslate
     {
         //Translated Dictionary
         private static Dictionary<string, string> allTranslated = new Dictionary<string, string>();
-        //Translated Dictionary
+        //Untranslated Dictionary
         private static Dictionary<string, string> allUntranslated = new Dictionary<string, string>();
+        //Machine Translations Dictinary
+        private static Dictionary<string, string> machineTranslated = new Dictionary<string, string>();
+        //Error Dictionary
+        private static Dictionary<string, string> translationErrors = new Dictionary<string, string>();
+
+        //Maintain the HTTP Client open for more speed
+        private static readonly HttpClient httpClient = new HttpClient();
 
         static void Main(string[] args)
         {
-            //Defining languages
+            //==================== Defining Languages ===================
             string fromLanguage = "ja";
             string toLanguage = "en";
 
-            //Read Current Folder
+            //==================== Folder Management ====================
+            //Read Folder with text to be translated
             string mainFolder;
 
             if (args.Length != 0) { mainFolder = args[0]; }
             else
             {
-                Console.Write("Enter the folder path: ");
+                Console.Write("Enter the source folder path: ");
                 mainFolder = Console.ReadLine();
+                Console.WriteLine();
                 if (string.IsNullOrEmpty(mainFolder))
                 {
                     Console.Write("Invalid");
@@ -40,22 +50,29 @@ namespace MachineTranslate
             stopWatch.Start();
 
             //get data from main folder
-            DirectoryInfo currDir = new DirectoryInfo(mainFolder);
-            Console.WriteLine(currDir.FullName);
+            DirectoryInfo sourceDir = new DirectoryInfo(mainFolder);
 
             //check if folder exists
-            if (!currDir.Exists)
+            if (!sourceDir.Exists)
             {
                 Console.WriteLine("Folder Not Found.");
                 Console.ReadKey();
                 Environment.Exit(0);
             }
 
+            //Making the output path the same as the .exe
+            string thisFolder = AppDomain.CurrentDomain.BaseDirectory;
+            string outputFolder = Path.Combine(thisFolder, "MachineTranslation");
+            Directory.CreateDirectory(outputFolder);
+            DirectoryInfo outputDir = new DirectoryInfo(outputFolder);
+
+
+            //==================== Populating Dictionaries ====================
             //Getting all files from folder and subfolders
-            FileInfo[] filesInFolder = currDir.GetFiles("*.txt", SearchOption.AllDirectories);
+            FileInfo[] filesInFolder = sourceDir.GetFiles("*.txt", SearchOption.AllDirectories);
 
             //populating the Translated dictionary with unique translations
-            Console.WriteLine("Searching for translations in all files");
+            Console.WriteLine("Searching for translated lines in source folder");
             for (int i = 0; i < filesInFolder.Length; i++)
             {
                 string fileName = filesInFolder[i].FullName;
@@ -66,8 +83,22 @@ namespace MachineTranslate
             }
             Console.WriteLine();
 
+            //populating the Translated dictionary with translations from the output folder (in case of a second run)
+            Console.WriteLine("Searching for translated lines in the output folder");
+            FileInfo[] filesInOutputFolder = outputDir.GetFiles("*.txt", SearchOption.AllDirectories);
+            for (int i = 0; i < filesInOutputFolder.Length; i++)
+            {
+                string fileName = filesInOutputFolder[i].FullName;
+                UpdateTranslatedDictionary(fileName);
+
+                string displayFileNumber = "\rFile " + (i + 1).ToString() + " of " + filesInOutputFolder.Length.ToString();
+                Console.Write(displayFileNumber);
+            }
+            Console.WriteLine();
+
+
             //populating the Untranslated dictionary with unique entries that are not in treanslated dictionary
-            Console.WriteLine("Searching for Untranslated lines");
+            Console.WriteLine("Searching for untranslated lines in the source folder");
             for (int i = 0; i < filesInFolder.Length; i++)
             {
                 string fileName = filesInFolder[i].FullName;
@@ -78,54 +109,161 @@ namespace MachineTranslate
             }
             Console.WriteLine();
 
-            //setting Output folder and file
-            string outputFolder = mainFolder + "\\MachineTranslation\\";            
-            Directory.CreateDirectory(outputFolder);
 
-            string OutputFile = outputFolder + "MachineTranslation.txt";
+            //==================== Translating via GoogleTranslate ====================
+            string rawTranslations = Path.Combine(outputFolder,"1-GoogleTranslateRAW.txt");
 
-            //Translating via GoogleTranslate
-            Console.WriteLine("Translating lines:");
-            int translationSize = allUntranslated.Count;
+            Console.WriteLine("Translating lines with Google Translate:");
+            int untranslatedSize = allUntranslated.Count;
             int sleepTimer = 0;
 
-            for (int i = 0; i < translationSize; i++)
+            for (int i = 0; i < untranslatedSize; i++)
             {
                 string line = allUntranslated.ElementAt(i).Key;
 
                 string translatedLine;
-                translatedLine = GoogleTranslate.Translate(fromLanguage, toLanguage, line);
-                translatedLine = line + "="+ translatedLine;
+                translatedLine = GoogleTranslate.Translate(fromLanguage, toLanguage, line, httpClient);
+                translatedLine = line + "=" + translatedLine;
 
-                File.AppendAllText(OutputFile, translatedLine + Environment.NewLine);
+                File.AppendAllText(rawTranslations, translatedLine + Environment.NewLine);
 
-                string displayCount = "\rLine " + (i + 1) + " of " + translationSize;
+                string displayCount = "\rLine " + (i + 1) + " of " + untranslatedSize;
                 Console.Write(displayCount);
 
-                //Google translate limit of 5 translations per second
-                Thread.Sleep(200);
+                //Google translate limit of  translations per second
+                Thread.Sleep(100);
 
-                //Sleep after 100 translations so your ip is not banned
-                sleepTimer++;
-                if (sleepTimer>=100)
-                {
-                    Console.WriteLine();
-                    Console.WriteLine("sleeping for 10 seconds so Google Translate don't ban your IP");
-                    sleepTimer = 0;
-                    Thread.Sleep(10000);
-                }
-
+                ////Sleep after 100 translations so your ip is not banned
+                //sleepTimer++;
+                //if (sleepTimer>=100)
+                //{
+                //    Console.WriteLine();
+                //    Console.WriteLine("sleeping for 10 seconds so Google Translate don't ban your IP");
+                //    sleepTimer = 0;
+                //    Thread.Sleep(10000);
+                //}
             }
             Console.WriteLine();
 
-            //ending console dialogues
-            stopWatch.Stop();
+
+            //==================== Checking for Errors ====================
+            Console.WriteLine("Checking for errors from CommonErrors.txt");
+
+            //populating machine dictionary
+            filesInOutputFolder = outputDir.GetFiles("*.txt", SearchOption.AllDirectories);
+            for (int i = 0; i < filesInOutputFolder.Length; i++)
+            {
+                string fileName = filesInOutputFolder[i].FullName;
+
+                //Read Current File
+                string[] currentFile = File.ReadAllLines(fileName);
+
+                //seek all lines of the current file
+                for (int j = 0; j < currentFile.Length; j++)
+                {
+                    string line = currentFile[j];
+                    string[] parts = line.Split('=');
+                    string key = parts[0];
+                    string value = parts[1];
+                    if (!machineTranslated.ContainsKey(key) && (parts.Length == 2))
+                        machineTranslated.Add(key, value);
+                    else if (machineTranslated.ContainsKey(key) && (parts.Length == 2))
+                        machineTranslated[key] = value;
+                }
+            }
+
+            //populating error dictionary
+            string[] errorList = File.ReadAllLines(Path.Combine(thisFolder, "CommonErrors.txt"));
+           
+            for (int i = 0; i < machineTranslated.Count; i++)
+            {
+                for (int j = 0; j < errorList.Length; j++)
+                {
+                    string key = machineTranslated.ElementAt(i).Key;
+                    string value = machineTranslated.ElementAt(i).Value;
+                    string error = errorList[j];
+                    if (value.Contains(error))
+                    {
+                        translationErrors.Add(key, value);
+                    }
+                }
+            }
+
+            //Translating errors with bing translate
+            string bingTranslationsFile = Path.Combine(outputFolder,"2-BingTranslateRAW.txt");
+            int errorSize = translationErrors.Count;
+
+            Console.WriteLine("Trying to translate errors with Bing translator");
+
+            for (int i = 0; i < errorSize; i++)
+            {
+                string line = translationErrors.ElementAt(i).Key;
+
+                string translatedLine;
+                translatedLine = BingTranslator.Translate(fromLanguage, toLanguage, line);
+                translatedLine = line + "=" + translatedLine;
+
+                File.AppendAllText(bingTranslationsFile, translatedLine + Environment.NewLine);
+
+                string displayCount = "\rLine " + (i + 1) + " of " + errorSize;
+                Console.Write(displayCount);
+
+                //Bing translate limit of translations per second
+                Thread.Sleep(100);
+            }
+            Console.WriteLine();
+
+            //Updating translated dictionary with Bing translations
+            if (File.Exists(bingTranslationsFile))
+             {
+                string[] bingTranslationsString = File.ReadAllLines(bingTranslationsFile);
+                for (int i = 0; i < bingTranslationsString.Length; i++)
+                {
+                    string line = bingTranslationsString[i];
+                    string[] parts = line.Split('=');
+                    if (parts.Length == 2)
+                    {
+                        string key = parts[0];
+                        string value = parts[1];
+                        machineTranslated[key] = value;
+                    }
+                }
+            }
+
+            //writing machine translations corrected
+            string correctedMachineFile = Path.Combine(outputFolder, "3-MachineTranslationsCorrected.txt");
+            string[] correctedMachineString = new string[machineTranslated.Count];
+            for (int i = 0; i < machineTranslated.Count; i++)
+            {
+                correctedMachineString[i] = machineTranslated.ElementAt(i).Key + "=" + machineTranslated.ElementAt(i).Value;                
+            }
+            File.WriteAllLines(correctedMachineFile, correctedMachineString);
+
+
+
+
+
+            //==================== Fixing Style Errors ====================
+            Dictionary<string, string> substitutions = new Dictionary<string, string>();
             
-            string display= "Elapsed time " + stopWatch.Elapsed;
+
+
+
+
+
+
+
+
+            //==================== Ending Console Dialogues ====================
+            stopWatch.Stop();
+
+            string display = "Elapsed time " + stopWatch.Elapsed;
             Console.WriteLine(display);
             Console.WriteLine("Press any key to exit");
+            Console.WriteLine();
             Console.ReadKey();
         }
+
 
         static void UpdateTranslatedDictionary(string fileName)
         {
