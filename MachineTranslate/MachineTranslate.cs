@@ -21,14 +21,11 @@ namespace MachineTranslate
         //Error Dictionary
         private static Dictionary<string, string> translationErrors = new Dictionary<string, string>();
 
-        //Maintain the HTTP Client open for more speed
+        //Maintain the HTTP Client open
         private static readonly HttpClient httpClient = new HttpClient();
 
         static void Main(string[] args)
         {
-            //==================== Defining Languages ===================
-            string fromLanguage = "ja";
-            string toLanguage = "en";
 
             //==================== Folder Management ====================
             //Read Folder with text to be translated
@@ -67,6 +64,27 @@ namespace MachineTranslate
             string outputFolder = Path.Combine(thisFolder, "MachineTranslation");
             Directory.CreateDirectory(outputFolder);
             DirectoryInfo outputDir = new DirectoryInfo(outputFolder);
+
+            //==================== Defining Languages ===================
+            string fromLanguage = "";
+            string toLanguage = "";
+
+            //Reading from Languages file
+            string languageFile = Path.Combine(thisFolder, "Languages.txt");
+            string[] languageString = File.ReadAllLines(languageFile);
+            for (int i = 0; i < languageString.Length; i++)
+            {
+                string line = languageString[i];
+                if (!string.IsNullOrEmpty(line) && !(line.Substring(0, 2) == "//"))
+                {
+                    string[] parts = line.Split(':');
+                    if (parts.Length == 2)
+                    {
+                        fromLanguage = parts[0];
+                        toLanguage = parts[1];
+                    }
+                }
+            }
 
 
             //==================== Populating Dictionaries ====================
@@ -141,11 +159,13 @@ namespace MachineTranslate
                     string before = line.Substring(0, startindex);
                     string translatedBefore = GoogleTranslate.Translate(fromLanguage, toLanguage, before, httpClient);
                     requestCount++;
+                    Thread.Sleep(200);
 
                     startindex++;
                     string between = line.Substring(startindex, endindex - startindex);
                     string translatedBetween = GoogleTranslate.Translate(fromLanguage, toLanguage, between, httpClient);
                     requestCount++;
+                    Thread.Sleep(200);
 
                     string after = line.Substring(endindex + 1, lineLenght - endindex);
                     string translatedAfter = "";
@@ -153,6 +173,7 @@ namespace MachineTranslate
                     {
                         translatedAfter = GoogleTranslate.Translate(fromLanguage, toLanguage, after, httpClient);
                         requestCount++;
+                        Thread.Sleep(200);
                     }
 
                     translatedLine = translatedBefore + " (" + translatedBetween + ") " + translatedAfter;
@@ -161,6 +182,7 @@ namespace MachineTranslate
                 {
                     translatedLine = GoogleTranslate.Translate(fromLanguage, toLanguage, line, httpClient);
                     requestCount++;
+                    Thread.Sleep(200);
                 }
 
                 translatedLine = line + "=" + translatedLine;
@@ -169,9 +191,6 @@ namespace MachineTranslate
 
                 string displayCount = "\rLine " + (i + 1) + " of " + toTranslateSize;
                 Console.Write(displayCount);
-
-                //Google translate limit of 5 translations per second
-                Thread.Sleep(200);
 
                 //Sleep after 100 translations so your ip is not banned
                 if (requestCount >= 100)
@@ -257,11 +276,13 @@ namespace MachineTranslate
                     string before = line.Substring(0, startindex);
                     string translatedBefore= BingTranslator.Translate(fromLanguage, toLanguage, before, httpClient, bingSetup, bingIndex);
                     bingIndex++;
+                    Thread.Sleep(200);
 
                     startindex++;
                     string between = line.Substring(startindex, endindex - startindex);
                     string translatedBetween= BingTranslator.Translate(fromLanguage, toLanguage, between, httpClient, bingSetup, bingIndex);
                     bingIndex++;
+                    Thread.Sleep(200);
 
                     string after = line.Substring(endindex + 1, lineLenght - endindex);
                     string translatedAfter = "";
@@ -269,6 +290,7 @@ namespace MachineTranslate
                     {
                         translatedAfter = BingTranslator.Translate(fromLanguage, toLanguage, after, httpClient, bingSetup, bingIndex);
                         bingIndex++;
+                        Thread.Sleep(200);
                     }
 
                     translatedLine = translatedBefore + " (" + translatedBetween + ") " + translatedAfter;
@@ -277,6 +299,7 @@ namespace MachineTranslate
                 {
                     translatedLine = BingTranslator.Translate(fromLanguage, toLanguage, line, httpClient, bingSetup, bingIndex);
                     bingIndex++;
+                    Thread.Sleep(200);
                 }                
                 
                 translatedLine = line + "=" + translatedLine;
@@ -284,10 +307,7 @@ namespace MachineTranslate
                 File.AppendAllText(bingTranslationsFile, translatedLine + Environment.NewLine);
 
                 string displayCount = "\rLine " + (i + 1) + " of " + errorSize;
-                Console.Write(displayCount);
-
-                //Bing translate limit of translations per second
-                Thread.Sleep(100);
+                Console.Write(displayCount);               
             }
             Console.WriteLine();
 
@@ -349,7 +369,7 @@ namespace MachineTranslate
                 machineTranslated[key] = text;
             }
 
-            //Writing final file
+            ////==================== Writing final file ====================
             string machineTranslationsFinalFile = Path.Combine(outputFolder, "MachineTranslationsFinal.txt");
             string[] machineTranslationsFinalString = new string[machineTranslated.Count];
             for (int i = 0; i < machineTranslated.Count; i++)
@@ -365,7 +385,6 @@ namespace MachineTranslate
             string display = "Elapsed time " + stopWatch.Elapsed;
             Console.WriteLine(display);
             Console.WriteLine("Press any key to exit");
-            Console.WriteLine();
             Console.ReadKey();
         }
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace MachineTranslate
 {
@@ -32,6 +33,7 @@ namespace MachineTranslate
 
             //Getting translation from result
             string translation = result.Substring(4, result.IndexOf("\",\"") - 4);
+            translation = Regex.Unescape(translation);
             return translation;
         }
 

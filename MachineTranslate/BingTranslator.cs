@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace MachineTranslate
 {
@@ -21,7 +22,7 @@ namespace MachineTranslate
             string[] setup =new string[] { _IG, _IID };
             return setup;
         }
-        public static string Translate(string fromLanguage, string toLanguage, string UntranslatedText, HttpClient client, string[] setup, int count)
+        public static string Translate(string fromLanguage, string toLanguage, string UntranslatedText, HttpClient httpClient, string[] setup, int count)
         {
             string _IG = setup[0];
             string _IID = setup[1];
@@ -38,13 +39,13 @@ namespace MachineTranslate
 
             //Sending POST            
             var content = new FormUrlEncodedContent(data);
-            var response = client.PostAsync(url, content).Result;
+            var response = httpClient.PostAsync(url, content).Result;
             var responseContent = response.Content;
             string responseString = responseContent.ReadAsStringAsync().Result;
 
             //Reading Translation
             string translatedText = searchContent("\"text\":\"", responseString);
-
+            translatedText = Regex.Unescape(translatedText);
             return translatedText;
         }
         static string searchContent(string searchFor, string content)
