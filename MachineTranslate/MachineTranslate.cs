@@ -5,6 +5,7 @@ using System.Linq;
 using System.Diagnostics;
 using System.Threading;
 using System.Net.Http;
+using System.Text.RegularExpressions;
 
 namespace MachineTranslate
 {
@@ -65,6 +66,7 @@ namespace MachineTranslate
             Directory.CreateDirectory(outputFolder);
             DirectoryInfo outputDir = new DirectoryInfo(outputFolder);
 
+
             //==================== Defining Languages ===================
             string fromLanguage = "";
             string toLanguage = "";
@@ -75,7 +77,7 @@ namespace MachineTranslate
             for (int i = 0; i < languageString.Length; i++)
             {
                 string line = languageString[i];
-                if (!string.IsNullOrEmpty(line) && !(line.Substring(0, 2) == "//"))
+                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
                 {
                     string[] parts = line.Split(':');
                     if (parts.Length == 2)
@@ -133,12 +135,12 @@ namespace MachineTranslate
             for (int i = 0; i < sourceUntranslated.Count; i++)
             {
                 string key = sourceUntranslated.ElementAt(i).Key;
-                if (!allTranslated.ContainsKey(key)) 
+                if (!allTranslated.ContainsKey(key))
                     toTranslate.Add(key, "");
             }
 
             //==================== Translating via GoogleTranslate ====================
-            string googleTranslateFile = Path.Combine(outputFolder,"1-GoogleTranslateRAW.txt");
+            string googleTranslateFile = Path.Combine(outputFolder, "1-GoogleTranslateRAW.txt");
 
             Console.WriteLine("Translating lines with Google Translate:");
             int toTranslateSize = toTranslate.Count;
@@ -150,7 +152,7 @@ namespace MachineTranslate
                 string translatedLine;
 
                 //Translating text between parenthesis separately
-                if (line.IndexOfAny("（(".ToCharArray()) != -1)
+                if ((line.IndexOfAny("（(".ToCharArray()) != -1) && (line.IndexOfAny("）)".ToCharArray()) != -1))
                 {
                     int startindex = line.IndexOfAny("（(".ToCharArray());
                     int endindex = line.IndexOfAny("）)".ToCharArray());
@@ -171,12 +173,12 @@ namespace MachineTranslate
                     string translatedAfter = "";
                     if (after.Length > 0)
                     {
-                        translatedAfter = GoogleTranslate.Translate(fromLanguage, toLanguage, after, httpClient);
+                        translatedAfter =" " + GoogleTranslate.Translate(fromLanguage, toLanguage, after, httpClient);
                         requestCount++;
                         Thread.Sleep(200);
                     }
 
-                    translatedLine = translatedBefore + " (" + translatedBetween + ") " + translatedAfter;
+                    translatedLine = translatedBefore + " (" + translatedBetween + ")" + translatedAfter;
                 }
                 else
                 {
@@ -195,17 +197,13 @@ namespace MachineTranslate
                 //Sleep after 100 translations so your ip is not banned
                 if (requestCount >= 100)
                 {
-                    Console.Write(" Sleeping for 20 seconds so Google Translate don't ban your IP");
+                    Console.Write(" Sleeping for 15 seconds so Google Translate don't ban your IP");
                     requestCount = 0;
-                    Thread.Sleep(20000);
+                    Thread.Sleep(15000);
                     Console.Write("\r                                                                               ");
                 }
             }
             Console.WriteLine();
-
-
-            //==================== Checking for Errors ====================
-            Console.WriteLine("Checking for errors from CommonErrors.txt");
 
             //Updating translated dictionary with new translations
             filesInOutputFolder = outputDir.GetFiles("*.txt", SearchOption.AllDirectories);
@@ -214,6 +212,9 @@ namespace MachineTranslate
                 string fileName = filesInOutputFolder[i].FullName;
                 UpdateTranslatedDictionary(fileName);
             }
+
+            //==================== Checking for Errors ====================
+            Console.WriteLine("Checking for errors from CommonErrors.txt");
 
             //populating machine dictionary with translations just for the untranslated text
             for (int i = 0; i < sourceUntranslated.Count; i++)
@@ -225,29 +226,41 @@ namespace MachineTranslate
                     machineTranslated.Add(key, value);
             }
 
-            //populating error dictionary with lines that contains at least one error
-            string[] errorList = File.ReadAllLines(Path.Combine(thisFolder, "CommonErrors.txt"));
-           
+            //Reading error file Retranslate
+            string[] errorListFile = File.ReadAllLines(Path.Combine(thisFolder, "Retranslate.txt"));
+            List<string> errorList = new List<string>();
+
+            for (int i = 0; i < errorListFile.Length; i++)
+            {
+                string line = errorListFile[i];
+                if ((!string.IsNullOrEmpty(line)) && !line.StartsWith("//"))
+                {
+                    errorList.Add(line);
+                }
+            }
+
+            //Populating error dictionary with lines that contains at least one error
             for (int i = 0; i < machineTranslated.Count; i++)
             {
-                for (int j = 0; j < errorList.Length; j++)
+                string key = machineTranslated.ElementAt(i).Key;
+                string value = machineTranslated.ElementAt(i).Value;
+                bool containsError = false;
+
+                for (int j = 0; j < errorList.Count; j++)
                 {
-                    string key = machineTranslated.ElementAt(i).Key;
-                    string value = machineTranslated.ElementAt(i).Value;
-                    string error = errorList[j];
-                    if ((!string.IsNullOrEmpty(error)) && !(error.Substring(0, 2) == "//"))
-                    {
-                        if (value.Contains(error) && !translationErrors.ContainsKey(key))
-                        {
-                            translationErrors.Add(key, value);
-                        }
-                    }
+                    string error = errorList.ElementAt(j);
+                    if (Regex.IsMatch(value, error)) containsError = true;
+                }
+
+                if (containsError == true)
+                {
+                    translationErrors.Add(key, value);
                 }
             }
 
 
             //==================== Translating errors with Bing Translator ====================
-            string bingTranslationsFile = Path.Combine(outputFolder,"2-BingTranslateRAW.txt");
+            string bingTranslationsFile = Path.Combine(outputFolder, "2-BingTranslateRAW.txt");
             int errorSize = translationErrors.Count;
             Console.WriteLine("Trying to translate errors with Bing translator");
 
@@ -258,7 +271,7 @@ namespace MachineTranslate
 
             for (int i = 0; i < errorSize; i++)
             {
-                if (i==0)
+                if (i == 0)
                 {
                     //Getting BingTranslator's ID and IIG before start translating
                     bingSetup = BingTranslator.Setup(httpClient);
@@ -267,20 +280,20 @@ namespace MachineTranslate
                 string translatedLine;
 
                 //Translating text between parenthesis separately
-                if (line.IndexOfAny("（(".ToCharArray()) != -1)
+                if ((line.IndexOfAny("（(".ToCharArray()) != -1) && (line.IndexOfAny("）)".ToCharArray()) != -1))
                 {
                     int startindex = line.IndexOfAny("（(".ToCharArray());
                     int endindex = line.IndexOfAny("）)".ToCharArray());
-                    int lineLenght = line.Length-1;
+                    int lineLenght = line.Length - 1;
 
                     string before = line.Substring(0, startindex);
-                    string translatedBefore= BingTranslator.Translate(fromLanguage, toLanguage, before, httpClient, bingSetup, bingIndex);
+                    string translatedBefore = BingTranslator.Translate(fromLanguage, toLanguage, before, httpClient, bingSetup, bingIndex);
                     bingIndex++;
                     Thread.Sleep(200);
 
                     startindex++;
                     string between = line.Substring(startindex, endindex - startindex);
-                    string translatedBetween= BingTranslator.Translate(fromLanguage, toLanguage, between, httpClient, bingSetup, bingIndex);
+                    string translatedBetween = BingTranslator.Translate(fromLanguage, toLanguage, between, httpClient, bingSetup, bingIndex);
                     bingIndex++;
                     Thread.Sleep(200);
 
@@ -300,21 +313,20 @@ namespace MachineTranslate
                     translatedLine = BingTranslator.Translate(fromLanguage, toLanguage, line, httpClient, bingSetup, bingIndex);
                     bingIndex++;
                     Thread.Sleep(200);
-                }                
-                
+                }
+
                 translatedLine = line + "=" + translatedLine;
 
                 File.AppendAllText(bingTranslationsFile, translatedLine + Environment.NewLine);
 
                 string displayCount = "\rLine " + (i + 1) + " of " + errorSize;
-                Console.Write(displayCount);               
+                Console.Write(displayCount);
             }
             Console.WriteLine();
 
-
             //Updating machine dictionary with Bing translations
             if (File.Exists(bingTranslationsFile))
-             {
+            {
                 string[] bingTranslationsString = File.ReadAllLines(bingTranslationsFile);
                 for (int i = 0; i < bingTranslationsString.Length; i++)
                 {
@@ -331,43 +343,91 @@ namespace MachineTranslate
 
 
             //==================== Fixing Style Errors ====================
-            Dictionary<string, string> substitutions = new Dictionary<string, string>();
+            // Substitutions MUST follow the order in the file.
 
             Console.WriteLine("Fixing Style errors from Substitutions.txt");
 
-            //Populating substitution dictionary
+            ////Populating substitution dictionary (must follow the order)
             string subtitutionsFile = Path.Combine(thisFolder, "Substitutions.txt");
             string[] substitutionsString = File.ReadAllLines(subtitutionsFile);
+            int substitutionSize = 0;
+
             for (int i = 0; i < substitutionsString.Length; i++)
             {
                 string line = substitutionsString[i];
-                if (!string.IsNullOrEmpty(line) && !(line.Substring(0, 2) == "//"))
+                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
                 {
-                    string[] parts = line.Split('=');
-                    if (parts.Length == 2)
+                    substitutionSize++;
+                }
+            }
+
+            string[,] substitutions = new string[substitutionSize, 2];
+
+            int substittionIndex = -1;
+            for (int i = 0; i < substitutionsString.Length; i++)
+            {
+                string line = substitutionsString[i];
+
+                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
+                {
+                    substittionIndex++;
+
+                    //seeking for regex
+                    if (line.StartsWith("r:\""))
                     {
-                        string key = parts[0];
-                        string value = parts[1];
-                        substitutions.Add(key, value);
+                        int separator = line.IndexOf("\"=\"");
+                        string from = line.Substring(0, separator);
+                        separator += 3;
+
+                        //taking out the " at the end
+                        int endIndex = line.Length - 1;
+                        string to = line.Substring(separator, endIndex - separator);
+                        substitutions[substittionIndex, 0] = from;
+                        substitutions[substittionIndex, 1] = to;
+                    }
+                    //if its not a regex
+                    else
+                    {
+                        string[] parts = line.Split('=');
+                        if (parts.Length == 2)
+                        {
+                            string from = parts[0];
+                            string to = parts[1];
+                            substitutions[substittionIndex, 0] = from;
+                            substitutions[substittionIndex, 1] = to;
+                        }
+                        else Console.WriteLine("Substitution error: " + line);
                     }
                 }
             }
 
-            //Fixing machineTranslated dictionary
-            for (int i= 0; i < machineTranslated.Count; i++)
+            //Fixing machineTranslated dictionary (when substituting, it must follow the order
+            for (int i = 0; i < machineTranslated.Count; i++)
             {
-                string key= machineTranslated.ElementAt(i).Key;
+                string key = machineTranslated.ElementAt(i).Key;
                 string text = machineTranslated.ElementAt(i).Value;
 
-                for (int j = 0; j < substitutions.Count; j++)
+                for (int j = 0; j < substitutionSize; j++)
                 {
-                    string from = substitutions.ElementAt(j).Key;
-                    string to = substitutions.ElementAt(j).Value;
-                    text= text.Replace(from, to);
+                    string from = substitutions[j, 0];
+                    string to = substitutions[j, 1];
+
+                    //if its a regex
+                    if (from.StartsWith("r:\""))
+                    {
+                        //striping the r:"
+                        from = from.Substring(3, from.Length - 3);
+                        text = Regex.Replace(text, from, to);
+                    }
+                    else
+                    {
+                        text = text.Replace(from, to);
+                    }
                 }
 
                 machineTranslated[key] = text;
             }
+
 
             ////==================== Writing final file ====================
             string machineTranslationsFinalFile = Path.Combine(outputFolder, "MachineTranslationsFinal.txt");
@@ -400,7 +460,7 @@ namespace MachineTranslate
                 string line = currentFile[i];
 
                 //null check and add Uncommented lines to Translated dictionary
-                if ((!string.IsNullOrEmpty(line)) && (!line[0].Equals('/')))
+                if ((!string.IsNullOrEmpty(line)) && !line.StartsWith("//"))
                 {
                     string[] parts = line.Split('=');
                     if (parts.Length == 2)
@@ -431,7 +491,7 @@ namespace MachineTranslate
                 string line = currentFile[i];
 
                 //null check and add Commented lines to Untranslated dictionary
-                if ((!string.IsNullOrEmpty(line)) && (line[0].Equals('/')))
+                if (!string.IsNullOrEmpty(line) && line.StartsWith("//"))
                 {
                     line = line.Replace("/", "");
                     string[] parts = line.Split('=');
