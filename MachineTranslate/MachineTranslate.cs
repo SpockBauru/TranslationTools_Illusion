@@ -74,17 +74,16 @@ namespace MachineTranslate
             //Reading from Languages file
             string languageFile = Path.Combine(thisFolder, "Languages.txt");
             string[] languageString = File.ReadAllLines(languageFile);
+            languageString = CleanFile(languageString);
+
             for (int i = 0; i < languageString.Length; i++)
             {
                 string line = languageString[i];
-                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
+                string[] parts = line.Split(':');
+                if (parts.Length == 2)
                 {
-                    string[] parts = line.Split(':');
-                    if (parts.Length == 2)
-                    {
-                        fromLanguage = parts[0];
-                        toLanguage = parts[1];
-                    }
+                    fromLanguage = parts[0];
+                    toLanguage = parts[1];
                 }
             }
 
@@ -205,6 +204,7 @@ namespace MachineTranslate
             }
             Console.WriteLine();
 
+
             //Updating translated dictionary with new translations
             filesInOutputFolder = outputDir.GetFiles("*.txt", SearchOption.AllDirectories);
             for (int i = 0; i < filesInOutputFolder.Length; i++)
@@ -227,17 +227,8 @@ namespace MachineTranslate
             }
 
             //Reading error file Retranslate
-            string[] errorListFile = File.ReadAllLines(Path.Combine(thisFolder, "Retranslate.txt"));
-            List<string> errorList = new List<string>();
-
-            for (int i = 0; i < errorListFile.Length; i++)
-            {
-                string line = errorListFile[i];
-                if ((!string.IsNullOrEmpty(line)) && !line.StartsWith("//"))
-                {
-                    errorList.Add(line);
-                }
-            }
+            string[] errorList = File.ReadAllLines(Path.Combine(thisFolder, "Retranslate.txt"));
+            errorList = CleanFile(errorList);
 
             //Populating error dictionary with lines that contains at least one error
             for (int i = 0; i < machineTranslated.Count; i++)
@@ -246,16 +237,15 @@ namespace MachineTranslate
                 string value = machineTranslated.ElementAt(i).Value;
                 bool containsError = false;
 
-                for (int j = 0; j < errorList.Count; j++)
+                for (int j = 0; j < errorList.Length; j++)
                 {
-                    string error = errorList.ElementAt(j);
-                    if (Regex.IsMatch(value, error)) containsError = true;
+                    string error = errorList[j];
+                    if (Regex.IsMatch(value, error)) 
+                        containsError = true;
                 }
 
-                if (containsError == true)
-                {
+                if (containsError) 
                     translationErrors.Add(key, value);
-                }
             }
 
 
@@ -324,6 +314,14 @@ namespace MachineTranslate
             }
             Console.WriteLine();
 
+            //Updating translated dictionary with new translations
+            filesInOutputFolder = outputDir.GetFiles("*.txt", SearchOption.AllDirectories);
+            for (int i = 0; i < filesInOutputFolder.Length; i++)
+            {
+                string fileName = filesInOutputFolder[i].FullName;
+                UpdateTranslatedDictionary(fileName);
+            }
+
             //Updating machine dictionary with Bing translations
             if (File.Exists(bingTranslationsFile))
             {
@@ -347,67 +345,55 @@ namespace MachineTranslate
 
             Console.WriteLine("Fixing Style errors from Substitutions.txt");
 
-            ////Populating substitution dictionary (must follow the order)
+            ////Populating matrix substitutions[from,to] (must follow the order)
             string subtitutionsFile = Path.Combine(thisFolder, "Substitutions.txt");
             string[] substitutionsString = File.ReadAllLines(subtitutionsFile);
-            int substitutionSize = 0;
+            substitutionsString = CleanFile(substitutionsString);
 
-            for (int i = 0; i < substitutionsString.Length; i++)
-            {
-                string line = substitutionsString[i];
-                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
-                {
-                    substitutionSize++;
-                }
-            }
-
-            string[,] substitutions = new string[substitutionSize, 2];
-
-            int substittionIndex = -1;
-            for (int i = 0; i < substitutionsString.Length; i++)
+            int substitutionsLenght = substitutionsString.Length;
+            
+            string[,] substitutions = new string[substitutionsLenght, 2];
+            
+            for (int i = 0; i < substitutionsLenght; i++)
             {
                 string line = substitutionsString[i];
 
-                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
+                //seeking for regex
+                if (line.StartsWith("r:\""))
                 {
-                    substittionIndex++;
+                    int separator = line.IndexOf("\"=\"");
+                    string from = line.Substring(0, separator);
+                    separator += 3;
 
-                    //seeking for regex
-                    if (line.StartsWith("r:\""))
-                    {
-                        int separator = line.IndexOf("\"=\"");
-                        string from = line.Substring(0, separator);
-                        separator += 3;
+                    //taking out the " at the end
+                    int endIndex = line.Length - 1;
+                    string to = line.Substring(separator, endIndex - separator);
 
-                        //taking out the " at the end
-                        int endIndex = line.Length - 1;
-                        string to = line.Substring(separator, endIndex - separator);
-                        substitutions[substittionIndex, 0] = from;
-                        substitutions[substittionIndex, 1] = to;
-                    }
-                    //if its not a regex
-                    else
+                    substitutions[i, 0] = from;
+                    substitutions[i, 1] = to;
+                }
+                //if its not a regex
+                else
+                {
+                    string[] parts = line.Split('=');
+                    if (parts.Length == 2)
                     {
-                        string[] parts = line.Split('=');
-                        if (parts.Length == 2)
-                        {
-                            string from = parts[0];
-                            string to = parts[1];
-                            substitutions[substittionIndex, 0] = from;
-                            substitutions[substittionIndex, 1] = to;
-                        }
-                        else Console.WriteLine("Substitution error: " + line);
+                        string from = parts[0];
+                        string to = parts[1];
+                        substitutions[i, 0] = from;
+                        substitutions[i, 1] = to;
                     }
+                    else Console.WriteLine("Substitution error: " + line);
                 }
             }
 
-            //Fixing machineTranslated dictionary (when substituting, it must follow the order
+            //Fixing machineTranslated dictionary (when substituting, it must follow the order)
             for (int i = 0; i < machineTranslated.Count; i++)
             {
                 string key = machineTranslated.ElementAt(i).Key;
                 string text = machineTranslated.ElementAt(i).Value;
 
-                for (int j = 0; j < substitutionSize; j++)
+                for (int j = 0; j < substitutionsLenght; j++)
                 {
                     string from = substitutions[j, 0];
                     string to = substitutions[j, 1];
@@ -429,7 +415,7 @@ namespace MachineTranslate
             }
 
 
-            ////==================== Writing final file ====================
+            //==================== Writing final file ====================
             string machineTranslationsFinalFile = Path.Combine(outputFolder, "MachineTranslationsFinal.txt");
             string[] machineTranslationsFinalString = new string[machineTranslated.Count];
             for (int i = 0; i < machineTranslated.Count; i++)
@@ -449,6 +435,24 @@ namespace MachineTranslate
         }
 
 
+        ///<summary>Cleans commented and empty lines</summary>
+        static string[] CleanFile(string[] fileContent)
+        {
+            List<string> list = new List<string>();
+
+            for (int i = 0; i < fileContent.Length; i++)
+            {
+                string line = fileContent[i];
+                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
+                {
+                    list.Add(line);
+                }                                
+            }
+            string[] cleanFile = list.ToArray();
+            return cleanFile;
+        }
+
+        ///<summary>Seek for new translations in the file. Substitute if the translation exists. </summary>
         static void UpdateTranslatedDictionary(string fileName)
         {
             //Read Current File
@@ -460,7 +464,7 @@ namespace MachineTranslate
                 string line = currentFile[i];
 
                 //null check and add Uncommented lines to Translated dictionary
-                if ((!string.IsNullOrEmpty(line)) && !line.StartsWith("//"))
+                if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
                 {
                     string[] parts = line.Split('=');
                     if (parts.Length == 2)
@@ -471,6 +475,7 @@ namespace MachineTranslate
                         {
                             allTranslated.Add(key, value);
                         }
+                        //adds new values
                         else if (allTranslated.ContainsKey(key) && (value != ""))
                         {
                             allTranslated[key] = value;
@@ -480,6 +485,7 @@ namespace MachineTranslate
             }
         }
 
+        /// <summary>Considers untranslated lines starting with "//" and having just one "=". Everything after the "=" will be ignored </summary>
         static void UpdateUntranslatedDictionary(string fileName)
         {
             //Read Current File
@@ -501,7 +507,7 @@ namespace MachineTranslate
                         string value = parts[1];
                         if (!sourceUntranslated.ContainsKey(key))
                         {
-                            sourceUntranslated.Add(key, value);
+                            sourceUntranslated.Add(key, "");
                         }
                     }
                 }
