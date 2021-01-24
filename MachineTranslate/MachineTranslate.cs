@@ -204,7 +204,7 @@ namespace MachineTranslate
                         string text = " Sleeping for " + (delay / 1000).ToString() + " seconds so Google Translate don't ban your IP";
                         Console.Write(text);
                         Thread.Sleep(Convert.ToInt32(delay));
-                        Console.Write("\r                                                                                ");
+                        Console.Write("\r                                                                                   ");
                     }
                     translateTimer.Restart();
                     requestCount = 0;
