@@ -144,6 +144,8 @@ namespace MachineTranslate
             Console.WriteLine("Translating lines with Google Translate:");
             int toTranslateSize = toTranslate.Count;
             int requestCount = 0;
+            Stopwatch translateTimer = new Stopwatch();
+            translateTimer.Start();
 
             for (int i = 0; i < toTranslateSize; i++)
             {
@@ -194,12 +196,18 @@ namespace MachineTranslate
                 Console.Write(displayCount);
 
                 //Sleep after 100 translations so your ip is not banned
-                if (requestCount >= 100)
+                if (requestCount >= 120)
                 {
-                    Console.Write(" Sleeping for 15 seconds so Google Translate don't ban your IP");
+                    long delay = 60000 - translateTimer.ElapsedMilliseconds;
+                    if (delay > 0)
+                    {
+                        string text = " Sleeping for " + (delay / 1000).ToString() + " seconds so Google Translate don't ban your IP";
+                        Console.Write(text);
+                        Thread.Sleep(Convert.ToInt32(delay));
+                        Console.Write("\r                                                                                ");
+                    }
+                    translateTimer.Restart();
                     requestCount = 0;
-                    Thread.Sleep(15000);
-                    Console.Write("\r                                                                               ");
                 }
             }
             Console.WriteLine();
@@ -430,8 +438,8 @@ namespace MachineTranslate
 
             string display = "Elapsed time " + stopWatch.Elapsed;
             Console.WriteLine(display);
-            Console.WriteLine("Press any key to exit");
-            Console.ReadKey();
+            Console.WriteLine("Press ENTER to exit");
+            Console.ReadLine();
         }
 
 
