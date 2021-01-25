@@ -117,8 +117,7 @@ namespace MachineTranslate
             }
             Console.WriteLine();
 
-
-            //populating the Untranslated dictionary with unique entries from source folder
+             //populating the Untranslated dictionary with unique entries from source folder
             Console.WriteLine("Searching for untranslated lines in the source folder");
             for (int i = 0; i < filesInSourceFolder.Length; i++)
             {
@@ -131,9 +130,10 @@ namespace MachineTranslate
             Console.WriteLine();
 
             //pupulating toTranslate dictionary with entries that are in Untranslated but not in Translated
-            for (int i = 0; i < sourceUntranslated.Count; i++)
+            string[] untranslatedArray = sourceUntranslated.Keys.ToArray();
+            for (int i = 0; i < untranslatedArray.Length; i++)
             {
-                string key = sourceUntranslated.ElementAt(i).Key;
+                string key = untranslatedArray[i];
                 if (!allTranslated.ContainsKey(key))
                     toTranslate.Add(key, "");
             }
@@ -153,22 +153,30 @@ namespace MachineTranslate
                 string translatedLine;
 
                 //Translating text between parenthesis separately
-                if ((line.IndexOfAny("（(".ToCharArray()) != -1) && (line.IndexOfAny("）)".ToCharArray()) != -1))
+                int startindex = line.IndexOfAny("（(".ToCharArray());
+                int endindex = line.LastIndexOfAny("）)".ToCharArray());
+                if (endindex - startindex > 0)
                 {
-                    int startindex = line.IndexOfAny("（(".ToCharArray());
-                    int endindex = line.IndexOfAny("）)".ToCharArray());
                     int lineLenght = line.Length - 1;
 
                     string before = line.Substring(0, startindex);
-                    string translatedBefore = GoogleTranslate.Translate(fromLanguage, toLanguage, before, httpClient);
-                    requestCount++;
-                    Thread.Sleep(200);
+                    string translatedBefore = "";
+                    if (before.Length > 0)
+                    {
+                        translatedBefore = GoogleTranslate.Translate(fromLanguage, toLanguage, before, httpClient);
+                        requestCount++;
+                        Thread.Sleep(200);
+                    }
 
                     startindex++;
                     string between = line.Substring(startindex, endindex - startindex);
-                    string translatedBetween = GoogleTranslate.Translate(fromLanguage, toLanguage, between, httpClient);
-                    requestCount++;
-                    Thread.Sleep(200);
+                    string translatedBetween = "";
+                    if (between.Length > 0)
+                    {
+                        translatedBetween = GoogleTranslate.Translate(fromLanguage, toLanguage, between, httpClient);
+                        requestCount++;
+                        Thread.Sleep(200);
+                    }
 
                     string after = line.Substring(endindex + 1, lineLenght - endindex);
                     string translatedAfter = "";
@@ -222,6 +230,8 @@ namespace MachineTranslate
             }
 
             //==================== Checking for Errors ====================
+            Stopwatch testeTempo = new Stopwatch();
+            testeTempo.Start();
             Console.WriteLine("Checking for errors from CommonErrors.txt");
 
             //populating machine dictionary with translations just for the untranslated text
@@ -238,6 +248,7 @@ namespace MachineTranslate
             string[] errorList = File.ReadAllLines(Path.Combine(thisFolder, "Retranslate.txt"));
             errorList = CleanFile(errorList);
 
+            Console.WriteLine(testeTempo.Elapsed.ToString());
             //Populating error dictionary with lines that contains at least one error
             for (int i = 0; i < machineTranslated.Count; i++)
             {
@@ -255,7 +266,7 @@ namespace MachineTranslate
                 if (containsError) 
                     translationErrors.Add(key, value);
             }
-
+            Console.WriteLine(testeTempo.Elapsed.ToString());
 
             //==================== Translating errors with Bing Translator ====================
             string bingTranslationsFile = Path.Combine(outputFolder, "2-BingTranslateRAW.txt");
@@ -278,22 +289,30 @@ namespace MachineTranslate
                 string translatedLine;
 
                 //Translating text between parenthesis separately
-                if ((line.IndexOfAny("（(".ToCharArray()) != -1) && (line.IndexOfAny("）)".ToCharArray()) != -1))
+                int startindex = line.IndexOfAny("（(".ToCharArray());
+                int endindex = line.LastIndexOfAny("）)".ToCharArray());
+                if (endindex - startindex > 0)
                 {
-                    int startindex = line.IndexOfAny("（(".ToCharArray());
-                    int endindex = line.IndexOfAny("）)".ToCharArray());
                     int lineLenght = line.Length - 1;
 
                     string before = line.Substring(0, startindex);
-                    string translatedBefore = BingTranslator.Translate(fromLanguage, toLanguage, before, httpClient, bingSetup, bingIndex);
-                    bingIndex++;
-                    Thread.Sleep(200);
+                    string translatedBefore = "";
+                    if (before.Length > 0)
+                    {
+                        translatedBefore = BingTranslator.Translate(fromLanguage, toLanguage, before, httpClient, bingSetup, bingIndex);
+                        bingIndex++;
+                        Thread.Sleep(200);
+                    }
 
                     startindex++;
                     string between = line.Substring(startindex, endindex - startindex);
-                    string translatedBetween = BingTranslator.Translate(fromLanguage, toLanguage, between, httpClient, bingSetup, bingIndex);
-                    bingIndex++;
-                    Thread.Sleep(200);
+                    string translatedBetween = "";
+                    if (between.Length > 0)
+                    {
+                        translatedBetween = BingTranslator.Translate(fromLanguage, toLanguage, between, httpClient, bingSetup, bingIndex);
+                        bingIndex++;
+                        Thread.Sleep(200);
+                    }
 
                     string after = line.Substring(endindex + 1, lineLenght - endindex);
                     string translatedAfter = "";
@@ -396,6 +415,7 @@ namespace MachineTranslate
             }
 
             //Fixing machineTranslated dictionary (when substituting, it must follow the order)
+            
             for (int i = 0; i < machineTranslated.Count; i++)
             {
                 string key = machineTranslated.ElementAt(i).Key;
@@ -421,7 +441,7 @@ namespace MachineTranslate
 
                 machineTranslated[key] = text;
             }
-
+            Console.WriteLine(testeTempo.Elapsed.ToString());
 
             //==================== Writing final file ====================
             string machineTranslationsFinalFile = Path.Combine(outputFolder, "MachineTranslationsFinal.txt");
@@ -474,7 +494,8 @@ namespace MachineTranslate
                 //null check and add Uncommented lines to Translated dictionary
                 if (!string.IsNullOrEmpty(line) && !line.StartsWith("//"))
                 {
-                    string[] parts = line.Split('=');
+                    char[] separator = new char[] { '=' };
+                    string[] parts = line.Split(separator, 2);
                     if (parts.Length == 2)
                     {
                         string key = parts[0];

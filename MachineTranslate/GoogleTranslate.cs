@@ -22,14 +22,21 @@ namespace MachineTranslate
             //HttpClient httpClient = new HttpClient();
             var response = httpClient.GetAsync(url).Result;
 
-            string result = "";
-            if (response.IsSuccessStatusCode)
+            //Checking if Google banned you
+            var responseString = response.ToString();
+            if (responseString.StartsWith("StatusCode: 429"))
             {
-                var responseContent = response.Content;
-
-                // by calling .Result you are synchronously reading the result
-                result = responseContent.ReadAsStringAsync().Result;
+                Console.WriteLine("\r\nSorry, GoogleTranslate banned your IP because too many requests :'( ");
+                Console.WriteLine("Press ENTER to exit.");
+                Console.ReadLine();
+                Environment.Exit(0);
             }
+
+            var responseContent = response.Content;
+
+            // by calling .Result you are synchronously reading the result
+            string result = responseContent.ReadAsStringAsync().Result;
+
 
             //Getting translation from result
             string translation = result.Substring(4, result.IndexOf("\",\"") - 4);
