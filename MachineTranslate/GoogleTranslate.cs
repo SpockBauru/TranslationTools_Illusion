@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net.Http;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace MachineTranslate
 {
@@ -33,13 +34,35 @@ namespace MachineTranslate
             }
 
             var responseContent = response.Content;
-
             // by calling .Result you are synchronously reading the result
             string result = responseContent.ReadAsStringAsync().Result;
 
 
             //Getting translation from result
-            string translation = result.Substring(4, result.IndexOf("\",\"") - 4);
+            string translation = SearchTranslation(result, fromLanguage, toLanguage);
+            return translation;
+        }
+
+        static string SearchTranslation(string result, string fromLanguage, string toLanguage)
+        {
+            result = result.Replace("\n]", "");
+            string[] separator = new string[] { "\n" };
+            string[] parts = result.Split(separator, StringSplitOptions.None);
+            string translation = "";
+            for (int i = 0; i< parts.Length; i++)
+            {
+                string line = parts[i];
+                if (line.Length>4 &&
+                    !line.Contains(".md\"]") &&
+                    !line.Contains(",\"" + fromLanguage + "\",") &&
+                    !line.Contains(",\"" + toLanguage + "\","))
+                {
+                    int startIndex = line.IndexOf("\"") + 1;
+                    int endIndex = line.IndexOf("\",\"");
+                    translation += line.Substring(startIndex, endIndex - startIndex);
+                }
+                    
+            }
             translation = Regex.Unescape(translation);
             return translation;
         }

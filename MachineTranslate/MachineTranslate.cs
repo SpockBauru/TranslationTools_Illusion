@@ -165,7 +165,7 @@ namespace MachineTranslate
                     {
                         translatedBefore = GoogleTranslate.Translate(fromLanguage, toLanguage, before, httpClient);
                         requestCount++;
-                        Thread.Sleep(200);
+                        Thread.Sleep(250);
                     }
 
                     startindex++;
@@ -175,7 +175,7 @@ namespace MachineTranslate
                     {
                         translatedBetween = GoogleTranslate.Translate(fromLanguage, toLanguage, between, httpClient);
                         requestCount++;
-                        Thread.Sleep(200);
+                        Thread.Sleep(250);
                     }
 
                     string after = line.Substring(endindex + 1, lineLenght - endindex);
@@ -184,7 +184,7 @@ namespace MachineTranslate
                     {
                         translatedAfter =" " + GoogleTranslate.Translate(fromLanguage, toLanguage, after, httpClient);
                         requestCount++;
-                        Thread.Sleep(200);
+                        Thread.Sleep(250);
                     }
 
                     translatedLine = translatedBefore + " (" + translatedBetween + ")" + translatedAfter;
@@ -193,7 +193,7 @@ namespace MachineTranslate
                 {
                     translatedLine = GoogleTranslate.Translate(fromLanguage, toLanguage, line, httpClient);
                     requestCount++;
-                    Thread.Sleep(200);
+                    Thread.Sleep(250);
                 }
 
                 translatedLine = line + "=" + translatedLine;
@@ -230,14 +230,12 @@ namespace MachineTranslate
             }
 
             //==================== Checking for Errors ====================
-            Stopwatch testeTempo = new Stopwatch();
-            testeTempo.Start();
             Console.WriteLine("Checking for errors from CommonErrors.txt");
 
             //populating machine dictionary with translations just for the untranslated text
-            for (int i = 0; i < sourceUntranslated.Count; i++)
+            for (int i = 0; i < untranslatedArray.Length; i++)
             {
-                string key = sourceUntranslated.ElementAt(i).Key;
+                string key = untranslatedArray[i];
                 string value = allTranslated[key];
 
                 if (!machineTranslated.ContainsKey(key))
@@ -248,12 +246,12 @@ namespace MachineTranslate
             string[] errorList = File.ReadAllLines(Path.Combine(thisFolder, "Retranslate.txt"));
             errorList = CleanFile(errorList);
 
-            Console.WriteLine(testeTempo.Elapsed.ToString());
             //Populating error dictionary with lines that contains at least one error
-            for (int i = 0; i < machineTranslated.Count; i++)
+            string[] machineKey = machineTranslated.Keys.ToArray();
+            for (int i = 0; i < untranslatedArray.Length; i++)
             {
-                string key = machineTranslated.ElementAt(i).Key;
-                string value = machineTranslated.ElementAt(i).Value;
+                string key = machineKey[i];
+                string value = machineTranslated[key];
                 bool containsError = false;
 
                 for (int j = 0; j < errorList.Length; j++)
@@ -262,11 +260,9 @@ namespace MachineTranslate
                     if (Regex.IsMatch(value, error)) 
                         containsError = true;
                 }
-
                 if (containsError) 
                     translationErrors.Add(key, value);
             }
-            Console.WriteLine(testeTempo.Elapsed.ToString());
 
             //==================== Translating errors with Bing Translator ====================
             string bingTranslationsFile = Path.Combine(outputFolder, "2-BingTranslateRAW.txt");
@@ -369,8 +365,7 @@ namespace MachineTranslate
 
             //==================== Fixing Style Errors ====================
             // Substitutions MUST follow the order in the file.
-
-            Console.WriteLine("Fixing Style errors from Substitutions.txt");
+            Console.WriteLine("Fixing Style errors from Substitutions.txt (it may take a while)");
 
             ////Populating matrix substitutions[from,to] (must follow the order)
             string subtitutionsFile = Path.Combine(thisFolder, "Substitutions.txt");
@@ -379,8 +374,9 @@ namespace MachineTranslate
 
             int substitutionsLenght = substitutionsString.Length;
             
-            string[,] substitutions = new string[substitutionsLenght, 2];
-            
+            string[] substitutionsFrom = new string[substitutionsLenght];
+            string[] substitutionsTo = new string[substitutionsLenght];
+
             for (int i = 0; i < substitutionsLenght; i++)
             {
                 string line = substitutionsString[i];
@@ -396,8 +392,8 @@ namespace MachineTranslate
                     int endIndex = line.Length - 1;
                     string to = line.Substring(separator, endIndex - separator);
 
-                    substitutions[i, 0] = from;
-                    substitutions[i, 1] = to;
+                    substitutionsFrom[i] = from;
+                    substitutionsTo[i] = to;
                 }
                 //if its not a regex
                 else
@@ -407,24 +403,27 @@ namespace MachineTranslate
                     {
                         string from = parts[0];
                         string to = parts[1];
-                        substitutions[i, 0] = from;
-                        substitutions[i, 1] = to;
+                        substitutionsFrom[i] = from;
+                        substitutionsTo[i] = to;
                     }
                     else Console.WriteLine("Substitution error: " + line);
                 }
             }
 
+            Stopwatch testeTempo = new Stopwatch();
+            testeTempo.Start();
+
             //Fixing machineTranslated dictionary (when substituting, it must follow the order)
-            
+            machineKey = machineTranslated.Keys.ToArray();
             for (int i = 0; i < machineTranslated.Count; i++)
             {
-                string key = machineTranslated.ElementAt(i).Key;
-                string text = machineTranslated.ElementAt(i).Value;
+                string key = machineKey[i];
+                string text = machineTranslated[key];
 
                 for (int j = 0; j < substitutionsLenght; j++)
                 {
-                    string from = substitutions[j, 0];
-                    string to = substitutions[j, 1];
+                    string from = substitutionsFrom[j];
+                    string to = substitutionsTo[j];
 
                     //if its a regex
                     if (from.StartsWith("r:\""))
@@ -448,7 +447,9 @@ namespace MachineTranslate
             string[] machineTranslationsFinalString = new string[machineTranslated.Count];
             for (int i = 0; i < machineTranslated.Count; i++)
             {
-                machineTranslationsFinalString[i] = machineTranslated.ElementAt(i).Key + "=" + machineTranslated.ElementAt(i).Value;
+                string key = machineKey[i];
+                string value = machineTranslated[key];
+                machineTranslationsFinalString[i] = key + "=" + value;
             }
             File.WriteAllLines(machineTranslationsFinalFile, machineTranslationsFinalString);
 
