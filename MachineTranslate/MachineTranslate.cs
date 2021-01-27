@@ -149,6 +149,7 @@ namespace MachineTranslate
 
             for (int i = 0; i < toTranslateSize; i++)
             {
+                Random randomTimer = new Random();
                 string line = toTranslate.ElementAt(i).Key;
                 string translatedLine;
 
@@ -159,23 +160,26 @@ namespace MachineTranslate
                 {
                     int lineLenght = line.Length - 1;
 
-                    string before = line.Substring(0, startindex);
+                    
                     string translatedBefore = "";
-                    if (before.Length > 0)
+                    if (startindex > 0)
                     {
+                        string before = line.Substring(0, startindex);
                         translatedBefore = GoogleTranslate.Translate(fromLanguage, toLanguage, before, httpClient);
                         requestCount++;
-                        Thread.Sleep(250);
+                        Thread.Sleep(200);
+                        Thread.Sleep(randomTimer.Next(50));
                     }
 
                     startindex++;
-                    string between = line.Substring(startindex, endindex - startindex);
                     string translatedBetween = "";
-                    if (between.Length > 0)
+                    if (endindex-startindex > 0)
                     {
+                        string between = line.Substring(startindex, endindex - startindex);
                         translatedBetween = GoogleTranslate.Translate(fromLanguage, toLanguage, between, httpClient);
                         requestCount++;
-                        Thread.Sleep(250);
+                        Thread.Sleep(200);
+                        Thread.Sleep(randomTimer.Next(50));
                     }
 
                     string after = line.Substring(endindex + 1, lineLenght - endindex);
@@ -184,7 +188,8 @@ namespace MachineTranslate
                     {
                         translatedAfter =" " + GoogleTranslate.Translate(fromLanguage, toLanguage, after, httpClient);
                         requestCount++;
-                        Thread.Sleep(250);
+                        Thread.Sleep(200);
+                        Thread.Sleep(randomTimer.Next(50));
                     }
 
                     translatedLine = translatedBefore + " (" + translatedBetween + ")" + translatedAfter;
@@ -193,7 +198,8 @@ namespace MachineTranslate
                 {
                     translatedLine = GoogleTranslate.Translate(fromLanguage, toLanguage, line, httpClient);
                     requestCount++;
-                    Thread.Sleep(250);
+                    Thread.Sleep(200);
+                    Thread.Sleep(randomTimer.Next(50));
                 }
 
                 translatedLine = line + "=" + translatedLine;
