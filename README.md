@@ -27,6 +27,8 @@ HOW IT WORKS
 5) Substitutes all strings using Substitutions.txt. (useful for style check)
 6) The final file is saved as "MachineTranslation\MachineTranslationsFinal.txt".
 
+**v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r4)**
+
 ## ReleaseToolHS2
 
   Read the translations repository folder and make a file clean to release. The release file will have:
