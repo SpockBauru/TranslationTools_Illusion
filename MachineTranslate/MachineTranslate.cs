@@ -236,7 +236,7 @@ namespace MachineTranslate
             }
 
             //==================== Checking for Errors ====================
-            Console.WriteLine("Checking for errors from CommonErrors.txt");
+            Console.WriteLine("Checking for errors from Retranslate.txt");
 
             //populating machine dictionary with translations just for the untranslated text
             for (int i = 0; i < untranslatedArray.Length; i++)
