@@ -99,7 +99,7 @@ namespace SplitMTL
                     List<string> outputFile = new List<string>();
                     //output file header
                     outputFile.Add("//***********************************************************************");
-                    outputFile.Add("//ATENÇÃO: Este arquivo é apenas para as traduções feitar por máquina! Coloque as traduções manuais em \"translation.txt\"");
+                    outputFile.Add("//ATENÇÃO: Este arquivo é apenas para as traduções feitas por máquina! Coloque as traduções manuais em \"translation.txt\"");
                     outputFile.Add("//***********************************************************************\r\n");
 
                     //seek all untranslated lines of the current file, adds translation to this line and write in the output array

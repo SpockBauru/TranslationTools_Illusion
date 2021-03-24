@@ -57,16 +57,28 @@ namespace ReleaseToolHS2
                 //RedirectedResources: Clear empty lines and write in the new work folder
                 Console.WriteLine("Cleaning Commented lines in RedirectedResources \r\n");
                 string workFolder = Path.Combine(outputRoot, "workFolder");
-                ClearFolders(resourcesInput, workFolder);
+                ClearFolders(resourcesInput, workFolder, "translation.txt");
 
                 //RedirectedResources: make a zip and clear the work folder
                 Console.WriteLine("Making the .zip for RedirectedResources \r\n");
                 string resourcesOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "RedirectedResources");
                 Directory.CreateDirectory(resourcesOutput);
-                ZipFile.CreateFromDirectory(workFolder, Path.Combine(resourcesOutput, "RedirectedResources.zip"));
+                ZipFile.CreateFromDirectory(workFolder, Path.Combine(resourcesOutput, "assets.zip"));
                 Directory.Delete(workFolder, true);
-            }
 
+
+                //MachineTranslation: Clear empty lines and write in the new work folder
+                ClearFolders(resourcesInput, workFolder, "zz_machineTranslation.txt");
+
+                //MachineTranslation: make a zip and clear the work folder
+                if (Directory.Exists(workFolder))
+                {
+                    Console.WriteLine("Making the .zip for MachineTranslation \r\n");
+                    Directory.CreateDirectory(resourcesOutput);
+                    ZipFile.CreateFromDirectory(workFolder, Path.Combine(resourcesOutput, "zz_MachineTranslations.zip"));
+                    Directory.Delete(workFolder, true);
+                }
+            }
 
             //TEXT
             string textInput = Path.Combine(inputRoot, "Translation", language, "Text");
@@ -147,10 +159,10 @@ namespace ReleaseToolHS2
         }
 
 
-        static void ClearFolders(string inputDir, string outputDir)
+        static void ClearFolders(string inputDir, string outputDir, string fileName)
         {
             //Getting all files
-            string[] allFiles = Directory.GetFiles(inputDir, "*.txt", SearchOption.AllDirectories);
+            string[] allFiles = Directory.GetFiles(inputDir, fileName, SearchOption.AllDirectories);
 
             //Read each file from input directory and write in output directory only if its not empty
             foreach (string currentFile in allFiles)
