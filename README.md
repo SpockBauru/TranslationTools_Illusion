@@ -41,7 +41,7 @@ HOW IT WORKS
   
   **IMPORTANT:** The file `config\ AutoTranslatorConfig.ini` must have the Language key configured correctly.
   
-  **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r3)**
+  **v2 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r5)**
 
 ## Translate Duplicates
 

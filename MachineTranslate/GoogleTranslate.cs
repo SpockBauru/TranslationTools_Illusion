@@ -59,7 +59,8 @@ namespace MachineTranslate
                 {
                     int startIndex = line.IndexOf("\"") + 1;
                     int endIndex = line.IndexOf("\",\"");
-                    translation += line.Substring(startIndex, endIndex - startIndex);
+                    if (startIndex<endIndex)
+                        translation += line.Substring(startIndex, endIndex - startIndex);
                 }
                     
             }
