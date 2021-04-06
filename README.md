@@ -41,6 +41,7 @@
   This simple tool reads the untranslated text from a given folder, translate them with online machine services, perform style checks and make a file with all translations.
 
   HOW TO USE
+  
   Open the file "MachineTranslate.exe" and enter the desired folder containing untranslated text. The result will be in the file "MachineTranslation\MachineTranslationsFinal.txt".
 
   There are more files in this folder, they are used to resume the translation process if the tool was closed for some reason.
