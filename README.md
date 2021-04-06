@@ -4,13 +4,17 @@
 ## StyleCheck
 
 This tool is intended to be used with translation files that are used by XUnity Auto Translator.
+
 It's a simple tool that substitutes strings for the translated part using rules from "Substitutions.txt". The original untranslated part (before the "=" sign) is not affected.
+
 It can also use Regular Expressions (Regex).
+
 It's useful to make simple style checks, such as using uppercase letters after a dot. But with Regexes and some imagination it can do more powerful substitutions.
 
-HOW IT WORKS
+HOW TO USE
 
 -Make the desired rules in "Substitutions.txt". All rules will be implemented following the order in this file, so order matters.
+
 -Drag and drop the desired file in "StyleCheck.exe"
 
 **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r7)**
@@ -21,12 +25,15 @@ HOW IT WORKS
 SplitMTL - Split Machine Translations
 
 This tool is intended to be used in translation projects of games using XUnity Auto Translator with the plugin TextResourceRedirector. It read Machine Translations and split into the folder "RedirectedResources", which is less resource intensive, decrease game loading and uses less RAM (but uses more disk space).
+
 The folder "RedirectedResources" must have a dump from the game text in order to work.
 
 HOW IT WORKS
 
 -This tool reads all Translated text from the source folder (asked when you open) and from the destination folder (MachineTranslation).
+
 -Then it reads all Untranslated text from the files "translation.txt" in the source folder and write the translated version in files called "zz_machineTranslation.txt" in "MachineTranslation", but imitating the structure from the source folder.
+
 -Each file "zz_machineTranslation.txt" will contain in its header a copy of the file "Header.txt", so it can be used for other languages than English.
 
 After that you can inspect the files "zz_machineTranslation.txt" and copy to the source folder.
@@ -39,6 +46,7 @@ This simple tool reads the untranslated text from a given folder, translate them
 
 HOW TO USE
 Open the file "MachineTranslate.exe" and enter the desired folder containing untranslated text. The result will be in the file "MachineTranslation\MachineTranslationsFinal.txt".
+
 There are more files in this folder, they are used to resume the translation process if the tool was closed for some reason.
 
 CONFIGURATION FILES
