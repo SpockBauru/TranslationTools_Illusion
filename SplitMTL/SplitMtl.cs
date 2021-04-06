@@ -53,6 +53,9 @@ namespace SplitMTL
             Directory.CreateDirectory(outputFolder);
             DirectoryInfo outputDir = new DirectoryInfo(outputFolder);
 
+            //Reading the Header file
+            string[] warningHeader = File.ReadAllLines("Header.txt");
+
             //==================== Populating Dictionaries ====================
             //Getting all files from folder and subfolders
             FileInfo[] filesInSourceFolder = sourceDir.GetFiles("*.txt", SearchOption.AllDirectories);
@@ -86,6 +89,7 @@ namespace SplitMTL
             //==================== Writing machine translations from untranslated text for each file ====================
 
             //Read each file from input directory and write in output directory the untranslated text with the MTL
+            Console.WriteLine("Splitting files to MachineTranslation folder");
             for (int i = 0; i < filesInSourceFolder.Length; i++)
             {
                 //current file
@@ -98,9 +102,7 @@ namespace SplitMTL
                     //output file
                     List<string> outputFile = new List<string>();
                     //output file header
-                    outputFile.Add("//***********************************************************************");
-                    outputFile.Add("//ATENÇÃO: Este arquivo é apenas para as traduções feitas por máquina! Coloque as traduções manuais em \"translation.txt\"");
-                    outputFile.Add("//***********************************************************************\r\n");
+                    outputFile.AddRange(warningHeader);
 
                     //seek all untranslated lines of the current file, adds translation to this line and write in the output array
                     bool isTranslated = true;
