@@ -1,7 +1,8 @@
 # TranslationToolsHS2
   Translations Tools for Honey Select 2
   
-##SplitMTL
+## SplitMTL
+
 SplitMTL - Split Machine Translations
 
 This tool is intended to be used in translation projects of games using XUnity Auto Translator with the plugin TextResourceRedirector. It read Machine Translations and split into the folder "RedirectedResources", which is less resource intensive, decrease game loading and uses less RAM (but uses more disk space).
