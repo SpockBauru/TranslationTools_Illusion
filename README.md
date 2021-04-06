@@ -12,10 +12,9 @@
   It's useful to make simple style checks, such as using uppercase letters after a dot. But with Regexes and some imagination it can do more powerful substitutions.
 
   HOW TO USE
-
-  -Make the desired rules in "Substitutions.txt". All rules will be implemented following the order in this file, so order matters.
-
-  -Drag and drop the desired file in "StyleCheck.exe"
+  1) Make the desired rules in "Substitutions.txt".
+     All rules will be implemented following the order in this file, so order matters.
+  2) Drag and drop the desired file in "StyleCheck.exe"
 
   **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r7)**
 
@@ -29,12 +28,9 @@
   The folder "RedirectedResources" must have a dump from the game text in order to work.
 
   HOW IT WORKS
-
-  -This tool reads all Translated text from the source folder (asked when you open) and from the destination folder (MachineTranslation).
-
-  -Then it reads all Untranslated text from the files "translation.txt" in the source folder and write the translated version in files called "zz_machineTranslation.txt" in "MachineTranslation", but imitating the structure from the source folder.
-
-  -Each file "zz_machineTranslation.txt" will contain in its header a copy of the file "Header.txt", so it can be used for other languages than English.
+  1) This tool reads all Translated text from the source folder (asked when you open) and from the destination folder (MachineTranslation).
+  2) Then it reads all Untranslated text from the files "translation.txt" in the source folder and write the translated version in files called "zz_machineTranslation.txt" in "MachineTranslation", but imitating the structure from the source folder.
+  3) Each file "zz_machineTranslation.txt" will contain in its header a copy of the file "Header.txt", so it can be used for other languages than English.
 
   After that you can inspect the files "zz_machineTranslation.txt" and copy to the source folder.
 
@@ -55,7 +51,7 @@
   3) Substitutions.txt: Substitute common errors with the format: oldWord=newWord
      Regular Expressions can be used with the format: r:"regex expression"="substitution" (quotes needed)
 
-HOW IT WORKS
+  HOW IT WORKS
   1) Reads all untranslated lines in .txt files from the given source folder and its subfolders.
      Are considered as untranslated lines starting with "//" and having an "=" sign. Example: //寝起き=
   2) Reads the translated lines from both the source folder and the destination folder "MachineTranslation".
@@ -74,10 +70,12 @@ HOW IT WORKS
   Read the translations repository folder and make a file clean to release. The release file will have:
 
   1) Cleaned all empty and commented lines in RedirectedResources (if it exist). If a file only has empty or commented lines it will be ignored.
-
   2) Folders RedirectedResources, Text and Texture will be zipped (if they exist).
-
   3) readme, license and config folder.
+  
+  HOW TO USE
+  
+  Drag and drop the GitHub project folder on "ReleaseToolHS2.exe".
 
   **IMPORTANT:** The file `config\ AutoTranslatorConfig.ini` must have the Language key configured correctly.
 
