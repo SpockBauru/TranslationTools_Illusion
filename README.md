@@ -1,6 +1,21 @@
 # TranslationToolsHS2
   Translations Tools for Honey Select 2
-  
+
+## StyleCheck
+
+This tool is intended to be used with translation files that are used by XUnity Auto Translator.
+It's a simple tool that substitutes strings for the translated part using rules from "Substitutions.txt". The original untranslated part (before the "=" sign) is not affected.
+It can also use Regular Expressions (Regex).
+It's useful to make simple style checks, such as using uppercase letters after a dot. But with Regexes and some imagination it can do more powerful substitutions.
+
+HOW IT WORKS
+
+-Make the desired rules in "Substitutions.txt". All rules will be implemented following the order in this file, so order matters.
+-Drag and drop the desired file in "StyleCheck.exe"
+
+**v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r7)**
+
+
 ## SplitMTL
 
 SplitMTL - Split Machine Translations
@@ -17,7 +32,7 @@ HOW IT WORKS
 After that you can inspect the files "zz_machineTranslation.txt" and copy to the source folder.
 
 **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r6)**
-  
+
 ## MachineTranslate
 
 This simple tool reads the untranslated text from a given folder, translate them with online machine services, perform style checks and make a file with all translations.
@@ -33,12 +48,12 @@ CONFIGURATION FILES
    Regular Expressions can be used with the format: r:"regex expression"="substitution" (quotes needed)
 
 HOW IT WORKS
-1) Reads all untranslated lines in .txt files from the given source folder and its subfolders. 
+1) Reads all untranslated lines in .txt files from the given source folder and its subfolders.
    Are considered as untranslated lines starting with "//" and having an "=" sign. Example: \\寝起き=
 2) Reads the translated lines from both the source folder and the destination folder "MachineTranslation".
    Are considered as translated lines without "//" in the beginning and with some text after the "=" sign. Example: 寝起き=Wake up
 3) Translate all untranslated lines that don't have a translation in both source and destination folder using GoogleTranslate.
-   Translated lines are saved in "MachineTranslation\1-GoogleTranslateRAW.txt".   
+   Translated lines are saved in "MachineTranslation\1-GoogleTranslateRAW.txt".
 4) Detects errored translations using Retranslate.txt and retranslate using BingTranslator
    Translated lines are saved in "MachineTranslation\2-BingTranslateRAW.txt".
 5) Substitutes all strings using Substitutions.txt. (useful for style check)
@@ -49,25 +64,25 @@ HOW IT WORKS
 ## ReleaseToolHS2
 
   Read the translations repository folder and make a file clean to release. The release file will have:
-  
+
   1) Cleaned all empty and commented lines in RedirectedResources (if it exist). If a file only has empty or commented lines it will be ignored.
-  
+
   2) Folders RedirectedResources, Text and Texture will be zipped (if they exist).
-  
+
   3) readme, license and config folder.
-  
+
   **IMPORTANT:** The file `config\ AutoTranslatorConfig.ini` must have the Language key configured correctly.
-  
+
   **v2 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r5)**
 
 ## Translate Duplicates
 
   Searches an entire folder if an untranslated line has been translated in other place and writes that translation. If there are several translations for the same sentence, only the first one is used. Useful for RedirectedResources folder. Use with caution!
-  
+
   **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r2)**
 
 ## Delete Duplicates
 
-  Create a new file without duplicated lines. Its a way faster than Notepad++  
-  
+  Create a new file without duplicated lines. Its a way faster than Notepad++
+
   **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r1)**
