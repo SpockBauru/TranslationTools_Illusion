@@ -57,7 +57,7 @@ CONFIGURATION FILES
 
 HOW IT WORKS
 1) Reads all untranslated lines in .txt files from the given source folder and its subfolders.
-   Are considered as untranslated lines starting with "//" and having an "=" sign. Example: \\寝起き=
+   Are considered as untranslated lines starting with "//" and having an "=" sign. Example: //寝起き=
 2) Reads the translated lines from both the source folder and the destination folder "MachineTranslation".
    Are considered as translated lines without "//" in the beginning and with some text after the "=" sign. Example: 寝起き=Wake up
 3) Translate all untranslated lines that don't have a translation in both source and destination folder using GoogleTranslate.
