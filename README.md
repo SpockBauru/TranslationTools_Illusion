@@ -1,23 +1,21 @@
 # TranslationToolsHS2
   Translations Tools for Honey Select 2
 
-## StyleCheck
+## ReleaseToolHS2
 
-  This tool is intended to be used with translation files that are used by XUnity Auto Translator.
+  Read the translations repository folder and make a file clean to release. The release file will have:
 
-  It's a simple tool that substitutes strings for the translated part using rules from "Substitutions.txt". The original untranslated part (before the "=" sign) is not affected.
-
-  It can also use Regular Expressions (Regex).
-
-  It's useful to make simple style checks, such as using uppercase letters after a dot. But with Regexes and some imagination it can do more powerful substitutions.
+  1) Cleaned all empty and commented lines in RedirectedResources (if it exist). If a file only has empty or commented lines it will be ignored.
+  2) Folders RedirectedResources, Text and Texture will be zipped (if they exist).
+  3) readme, license and config folder.
 
   HOW TO USE
-  1) Make the desired rules in "Substitutions.txt".
-     All rules will be implemented following the order in this file, so order matters.
-  2) Drag and drop the desired file in "StyleCheck.exe"
 
-  **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r7)**
+  Drag and drop the GitHub project folder on "ReleaseToolHS2.exe".
 
+  **IMPORTANT:** The file `config\ AutoTranslatorConfig.ini` must have the Language key configured correctly.
+
+  **v2 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r5)**
 
 ## SplitMTL
 
@@ -36,12 +34,29 @@
 
 **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r6)**
 
+## StyleCheck
+
+  This tool is intended to be used with translation files that are used by XUnity Auto Translator.
+
+  It's a simple tool that substitutes strings for the translated part using rules from "Substitutions.txt". The original untranslated part (before the "=" sign) is not affected.
+
+  It can also use Regular Expressions (Regex).
+
+  It's useful to make simple style checks, such as using uppercase letters after a dot. But with Regexes and some imagination it can do more powerful substitutions.
+
+  HOW TO USE
+  1) Make the desired rules in "Substitutions.txt".
+     All rules will be implemented following the order in this file, so order matters.
+  2) Drag and drop the desired file in "StyleCheck.exe"
+
+  **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r7)**
+
 ## MachineTranslate
 
   This simple tool reads the untranslated text from a given folder, translate them with online machine services, perform style checks and make a file with all translations.
 
   HOW TO USE
-  
+
   Open the file "MachineTranslate.exe" and enter the desired folder containing untranslated text. The result will be in the file "MachineTranslation\MachineTranslationsFinal.txt".
 
   There are more files in this folder, they are used to resume the translation process if the tool was closed for some reason.
@@ -65,22 +80,6 @@
   6) The final file is saved as "MachineTranslation\MachineTranslationsFinal.txt".
 
 **v2 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r8)**
-
-## ReleaseToolHS2
-
-  Read the translations repository folder and make a file clean to release. The release file will have:
-
-  1) Cleaned all empty and commented lines in RedirectedResources (if it exist). If a file only has empty or commented lines it will be ignored.
-  2) Folders RedirectedResources, Text and Texture will be zipped (if they exist).
-  3) readme, license and config folder.
-  
-  HOW TO USE
-  
-  Drag and drop the GitHub project folder on "ReleaseToolHS2.exe".
-
-  **IMPORTANT:** The file `config\ AutoTranslatorConfig.ini` must have the Language key configured correctly.
-
-  **v2 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r5)**
 
 ## Translate Duplicates
 
