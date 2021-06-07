@@ -46,7 +46,7 @@ namespace MTL_Duplicates
             //Getting all translation.txt from folder and subfolders
             FileInfo[] filesTranslationTxt = currDir.GetFiles("translation.txt", SearchOption.AllDirectories);
 
-            //Getting all translation.txt from folder and subfolders
+            //Getting all zz_machineTranslation.txt from folder and subfolders
             FileInfo[] filesMachineTranslation = currDir.GetFiles("zz_machineTranslation.txt", SearchOption.AllDirectories);
 
             //populating the dictionary
