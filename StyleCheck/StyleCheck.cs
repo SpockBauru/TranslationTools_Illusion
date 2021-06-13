@@ -37,7 +37,7 @@ namespace StyleCheck
             //check if folder exists
             if (!File.Exists(mainFile))
             {
-                Console.WriteLine("Folder Not Found.");
+                Console.WriteLine("File Not Found.");
                 Console.ReadKey();
                 Environment.Exit(0);
             }
