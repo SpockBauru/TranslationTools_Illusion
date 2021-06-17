@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Diagnostics;
+using System.Linq;
 
 namespace MTL_Duplicates
 {
@@ -59,6 +60,7 @@ namespace MTL_Duplicates
 
             //populating the dictionary
             Console.WriteLine("Searching for all translations...");
+            filesTranslationTxt = filesTranslationTxt.OrderByDescending(f => f.LastWriteTime).ThenByDescending(f => f.FullName).ToArray();
             foreach (FileInfo fileName in filesTranslationTxt)
             {
                 UpdateDictionary(fileName.FullName);
@@ -117,7 +119,8 @@ namespace MTL_Duplicates
                 string line = currentFile[i];
 
                 //Null Check and see if commented lines are in dictionary already. Adds translation if positive.
-                if ((!string.IsNullOrEmpty(line)) && line.StartsWith("//") && line.Contains("="))
+                //if ((!string.IsNullOrEmpty(line)) && line.StartsWith("//") && line.Contains("="))
+                if ((!string.IsNullOrEmpty(line)) && line.Contains("="))
                 {
                     string uncommented = line.Replace("//", "");
                     string[] parts = uncommented.Split('=');
