@@ -70,7 +70,7 @@ namespace MTL_Duplicates
             Console.WriteLine("Writing translations in commented lines...");
             foreach (FileInfo fileName in filesTranslationTxt)
             {
-                WriteUntranslated(fileName.FullName);
+                WriteNewTranslations(fileName.FullName);
             }
 
             //comenting translated lines in machine translation
@@ -107,24 +107,27 @@ namespace MTL_Duplicates
             }
         }
 
-        static void WriteUntranslated(string fileName)
+        static void WriteNewTranslations(string fileName)
         {
             //Read Current File
             string[] currentFile = File.ReadAllLines(fileName);
             Boolean fileChanged = false;
 
-            //seek all lines of the current file
+            //seek all lines in the current file
             for (int i = 0; i < currentFile.Length; i++)
             {
                 string line = currentFile[i];
 
-                //Null Check and see if commented lines are in dictionary already. Adds translation if positive.
-                //if ((!string.IsNullOrEmpty(line)) && line.StartsWith("//") && line.Contains("="))
+                //Null Check and see if lines are in dictionary already. Add/Update translation if positive.
                 if ((!string.IsNullOrEmpty(line)) && line.Contains("="))
                 {
-                    string uncommented = line.Replace("//", "");
-                    string[] parts = uncommented.Split('=');
-                    if (allTranslated.ContainsKey(parts[0]))
+                    string[] parts = line.Split('=');
+
+                    if (parts[0].StartsWith("//"))
+                        parts[0] = parts[0].TrimStart('/');
+
+                    //compare if translation in dictionary is different OR if line is commented
+                    if ((allTranslated.ContainsKey(parts[0]) && allTranslated[parts[0]] != parts[1]) || (allTranslated.ContainsKey(parts[0]) && line.StartsWith("//")))
                     {
                         currentFile[i] = parts[0] + "=" + allTranslated[parts[0]];
                         fileChanged = true;
