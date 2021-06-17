@@ -12,6 +12,10 @@ namespace MTL_Duplicates
 
         static void Main(string[] args)
         {
+            //----------------------------------------
+            // Folder Management
+            //----------------------------------------
+
             //Read Current Folder
             string mainFolder;
 
@@ -42,6 +46,10 @@ namespace MTL_Duplicates
                 Console.ReadKey();
                 Environment.Exit(0);
             }
+
+            //-----------------------------------------
+            //Main Code
+            //-----------------------------------------
 
             //Getting all translation.txt from folder and subfolders
             FileInfo[] filesTranslationTxt = currDir.GetFiles("translation.txt", SearchOption.AllDirectories);
@@ -83,12 +91,10 @@ namespace MTL_Duplicates
             string[] currentFile = File.ReadAllLines(fileName);
 
             //seek all lines of the current file
-            for (int i = 0; i <= currentFile.Length - 1; i++)
+            foreach (string line in currentFile)
             {
-                string line = currentFile[i];
-
                 //Null Check and add uncommented lines to translated dictionary
-                if ((!string.IsNullOrEmpty(line)) && (!line[0].Equals('/')))
+                if ((!string.IsNullOrEmpty(line)) && (!line.StartsWith("//")))
                 {
                     string[] parts = line.Split('=');
                     if (!allTranslated.ContainsKey(parts[0]) && (parts.Length == 2))
@@ -106,7 +112,7 @@ namespace MTL_Duplicates
             Boolean fileChanged = false;
 
             //seek all lines of the current file
-            for (int i = 0; i <= currentFile.Length - 1; i++)
+            for (int i = 0; i < currentFile.Length; i++)
             {
                 string line = currentFile[i];
 
@@ -138,7 +144,7 @@ namespace MTL_Duplicates
             Boolean fileChanged = false;
 
             //seek all lines of the current file
-            for (int i = 0; i <= currentFile.Length - 1; i++)
+            for (int i = 0; i < currentFile.Length; i++)
             {
                 string line = currentFile[i];
 
