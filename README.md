@@ -21,10 +21,10 @@
 
   This tool is intended to be used with translation files that are used by XUnity Auto Translator. 
   
-  Check for duplicated translations in files named `translation.txt` and `zz_MachineTranslation.txt` from an entire folder (and subfolders):
+  Check for duplicated translations in files named `translation.txt` and `zz_machineTranslation.txt` from an entire folder (and subfolders):
   
   1) In files `translation.txt`: Checks if an commented line has been translated in other `translation.txt` file and writes that translation. Also check if there are duplicated translations and update to the newest version (based on the file date/time).
-  2) In files `zz_MachineTranslation.txt`: If there is any translation that's also present in any file `translation.txt`, the translation in `zz_MachineTranslation.txt` will be commented.
+  2) In files `zz_machineTranslation.txt`: If there is any translation that's also present in any file `translation.txt`, the translation in `zz_machineTranslation.txt` will be commented.
   
   **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r9)**
 
