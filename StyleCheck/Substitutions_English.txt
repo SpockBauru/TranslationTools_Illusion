@@ -1,0 +1,213 @@
+// Substitute common style errors with the format: 
+//     oldWord=newWord
+// Substitutions are made in sequence, so order matters.
+//
+// Lines starting with r: are Regular Expressions (regex) in the format: 
+//     r:"regex expression"="substitution"      (quotes are needed)
+//
+// Tip: avoid use r: when possibe because regexes are very slow
+
+// For Honey Select 2. 
+// All lowercase because uppercase correction will be done later
+r:"\b[Mm]anko\b"="pussy"
+r:"\b[Ee]tch\b"="sex"
+r:"\bSM\b"="BDSM"
+omanko=pussy
+Ochinpo=dick
+ochinpo=dick
+Ochinchin=cock
+ochinchin=cock
+Ochinchi=cock
+ochinchi=cock
+Ketsumanko=asshole
+ketsumanko=asshole
+Squid=cum
+squid=cum
+Omae's=yours
+omae's=yours
+Omae=you
+omae=you
+Acme=cum
+acme=cum
+footwork=footjob
+buttocks=butt
+Opponent=partner
+opponent=partner
+
+//Yours / Mine
+r:"\b[Mm]y penis\b"="your penis"
+r:"\b[Mm]y cum(?=[^-])\b"="your cum"
+My ball=your ball
+my ball=your ball
+My dick=your dick
+my dick=your dick
+My cock=your cock
+my cock=your cock
+Your boob=my boob
+your boob=my boob
+Your breast=my breast
+your breast=my breast
+Your chest=my chest
+your chest=my chest
+Your tit=my tit
+your tit=my tit
+Your throat=my throat
+your throat=my throat
+Your pussy=my pussy
+your pussy=my pussy
+Your cunt=my cunt
+your cunt=my cunt
+Your ass=my ass
+your ass=my ass
+your butt=my butt
+Your butt=my butt
+Your feet=my feet
+your feet=my feet
+Your foot=my foot
+your foot=my foot
+can't help=can't avoid
+Can't help=can't avoid
+
+
+//Japanese ponctuation
+、=,
+。=.
+‥=..
+…=...
+（=(
+）=)
+
+//Japanese space
+　= 
+
+//Multiple Space
+r:" {2,}"=" "
+
+//Dots and ponctuation (order matter)
+ .=.
+r:"\.{4,}"="..."
+...?=?
+...!=!
+... ♪= ♪
+r:"\.(\w)"=". $1"
+?...=?
+!...=!
+
+//Parentheses
+( =(
+ )=)
+.)=)
+..)=...)
+).=)
+
+// Use Uppercase after a dot
+. a=. A
+. b=. B
+. c=. C
+. d=. D
+. e=. E
+. f=. F
+. g=. G
+. h=. H
+. i=. I
+. j=. J
+. k=. K
+. l=. L
+. m=. M
+. n=. N
+. o=. O
+. p=. P
+. q=. Q
+. r=. R
+. s=. S
+. t=. T
+. u=. U
+. v=. V
+. w=. W
+. x=. X
+. y=. Y
+. z=. Z
+
+// Use Uppercase after a question mark
+? a=? A
+? b=? B
+? c=? C
+? d=? D
+? e=? E
+? f=? F
+? g=? G
+? h=? H
+? i=? I
+? j=? J
+? k=? K
+? l=? L
+? m=? M
+? n=? N
+? o=? O
+? p=? P
+? q=? Q
+? r=? R
+? s=? S
+? t=? T
+? u=? U
+? v=? V
+? w=? W
+? x=? X
+? y=? Y
+? z=? Z
+
+// Use Uppercase after a exclamation
+! a=! A
+! b=! B
+! c=! C
+! d=! D
+! e=! E
+! f=! F
+! g=! G
+! h=! H
+! i=! I
+! j=! J
+! k=! K
+! l=! L
+! m=! M
+! n=! N
+! o=! O
+! p=! P
+! q=! Q
+! r=! R
+! s=! S
+! t=! T
+! u=! U
+! v=! V
+! w=! W
+! x=! X
+! y=! Y
+! z=! Z
+
+//Use Uppercase on the beginning of the translation
+r:"^a"="A"
+r:"^b"="B"
+r:"^c"="C"
+r:"^d"="D"
+r:"^e"="E"
+r:"^f"="F"
+r:"^g"="G"
+r:"^h"="H"
+r:"^i"="I"
+r:"^j"="J"
+r:"^k"="K"
+r:"^l"="L"
+r:"^m"="M"
+r:"^n"="N"
+r:"^o"="O"
+r:"^p"="P"
+r:"^q"="Q"
+r:"^r"="R"
+r:"^s"="S"
+r:"^t"="T"
+r:"^u"="U"
+r:"^v"="V"
+r:"^w"="W"
+r:"^x"="X"
+r:"^y"="Y"
+r:"^z"="Z"

@@ -1,0 +1,210 @@
+// Substitute common style errors with the format: 
+//     oldWord=newWord
+// Substitutions are made in sequence, so order matters.
+//
+// Lines starting with r: are Regular Expressions (regex) in the format: 
+//     r:"regex expression"="substitution"      (quotes are needed)
+//
+// Tip: avoid use r: when possibe because regexes are very slow
+
+
+// For Honey Select 2. 
+// All lowercase because uppercase correction will be done later
+r:"\b[Ee]tch\b"="sexo"
+r:"\b[Gg]alo\b"="pinto"
+r:"\b[Pp]iça\b"="pica"
+r:"\b[Pp]iças\b"="picas"
+r:"\b[Pp]ila\b"="pica"
+r:"\b[Pp]ilas\b"="picas"
+r:"\b[Gg]alos\b"="pintos"
+r:"\b[Bb]ichan[oa]\b"="boceta"
+r:"\b[Bb]ichan[oa]s\b"="bocetas"
+r:"\b[Rr]at[oa]\b"="boceta"
+r:"\b[Rr]at[oa]s\b"="bocetas"
+r:"\b[Gg]atinh[oa]\b"="boceta"
+r:"\b[Gg]atinh[oa]s\b"="bocetas"
+r:"\b[Cc]ona\b"="boceta"
+r:"\b[Cc]onas\b"="bocetas"
+r:"\b[Cc]um\b"="gozando"
+r:"\b[Oo]rgy\b"="orgia"
+r:"\bSM\b"="BDSM"
+
+// Seu ou meu
+r:"\b[Ss]eus seios\b"="meus seios"
+r:"\b[Ss]eus peitos\b"="meus peitos"
+//r:"\b[Ss]ua boceta\b"="minha boceta"
+r:"\b[Ss]eu traseiro\b"="meu traseiro"
+r:"\b[Ss]ua bunda\b"="minha bunda"
+r:"\b[Mm]eu pau\b"="seu pau"
+r:"\b[Mm]eu pinto\b"="seu pinto"
+r:"\b[Mm]eu pênis\b"="seu pênis"
+r:"\b[Mm]inha pica\b"="sua pica"
+r:"\b[Mm]eu idiota\b"="meu cu"
+
+
+r:"\bI\b"="eu"
+r:"\bH\b"="sexo"
+
+adversário=parceiro
+Adversário=parceiro
+oponente=parceiro
+Oponente=parceiro
+maroto=safado
+Maroto=safado
+marota=safada
+Marota=safada
+malandro=safado
+Malandro=safado
+malandra=safada
+Malandra=safada
+malandreco=safado
+Malandreco=safado
+malandreca=safada
+Malandreca=safada
+
+//Japanese ponctuation
+、=,
+。=.
+‥=..
+…=...
+（=(
+）=)
+
+//Japanese space
+　= 
+
+//Multiple Space
+r:" {2,}"=" "
+
+//Dots and ponctuation (order matter)
+ .=.
+r:"\.{4,}"="..."
+...?=?
+...!=!
+... ♪= ♪
+r:"\.(\w)"=". $1"
+?...=?
+!...=!
+
+//Parentheses
+( =(
+ )=)
+.)=)
+..)=...)
+).=)
+
+// Use Uppercase after a dot
+. a=. A
+. b=. B
+. c=. C
+. d=. D
+. e=. E
+. f=. F
+. g=. G
+. h=. H
+. i=. I
+. j=. J
+. k=. K
+. l=. L
+. m=. M
+. n=. N
+. o=. O
+. p=. P
+. q=. Q
+. r=. R
+. s=. S
+. t=. T
+. u=. U
+. v=. V
+. w=. W
+. x=. X
+. y=. Y
+. z=. Z
+. é=. É
+
+// Use Uppercase after a question mark
+? a=? A
+? b=? B
+? c=? C
+? d=? D
+? e=? E
+? f=? F
+? g=? G
+? h=? H
+? i=? I
+? j=? J
+? k=? K
+? l=? L
+? m=? M
+? n=? N
+? o=? O
+? p=? P
+? q=? Q
+? r=? R
+? s=? S
+? t=? T
+? u=? U
+? v=? V
+? w=? W
+? x=? X
+? y=? Y
+? z=? Z
+? é=? É
+
+// Use Uppercase after a exclamation
+! a=! A
+! b=! B
+! c=! C
+! d=! D
+! e=! E
+! f=! F
+! g=! G
+! h=! H
+! i=! I
+! j=! J
+! k=! K
+! l=! L
+! m=! M
+! n=! N
+! o=! O
+! p=! P
+! q=! Q
+! r=! R
+! s=! S
+! t=! T
+! u=! U
+! v=! V
+! w=! W
+! x=! X
+! y=! Y
+! z=! Z
+! é=! É
+
+//Use Uppercase on the beginning of the translation
+r:"^a"="A"
+r:"^b"="B"
+r:"^c"="C"
+r:"^d"="D"
+r:"^e"="E"
+r:"^f"="F"
+r:"^g"="G"
+r:"^h"="H"
+r:"^i"="I"
+r:"^j"="J"
+r:"^k"="K"
+r:"^l"="L"
+r:"^m"="M"
+r:"^n"="N"
+r:"^o"="O"
+r:"^p"="P"
+r:"^q"="Q"
+r:"^r"="R"
+r:"^s"="S"
+r:"^t"="T"
+r:"^u"="U"
+r:"^v"="V"
+r:"^w"="W"
+r:"^x"="X"
+r:"^y"="Y"
+r:"^z"="Z"
+r:"^é"="É"
