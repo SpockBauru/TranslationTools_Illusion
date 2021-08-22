@@ -1,7 +1,7 @@
-# TranslationToolsHS2
-  Translations Tools for Honey Select 2
+# TranslationTools_Illusion
+  Translations Tools for Illusion Games
 
-## ReleaseToolHS2
+## ReleaseTool
 
   Read the translations repository folder and make a file clean to release. The release file will have:
 
