@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Diagnostics;
+using System.Linq;
 
-namespace ReleaseToolHS2
+namespace ReleaseTool
 {
-    class ReleaseToolHS2
+    class ReleaseTool
     {
         static void Main(string[] args)
         {
@@ -84,11 +85,17 @@ namespace ReleaseToolHS2
             string textInput = Path.Combine(inputRoot, "Translation", language, "Text");
             if (Directory.Exists(textInput))
             {
-                //Creating a .zip with text folder
+                //Text: Clear empty lines and write in the new work folder
+                Console.WriteLine("Cleaning Commented lines in Text \r\n");
+                string workFolder = Path.Combine(outputRoot, "workFolder");
+                ClearFolders(textInput, workFolder, "*.txt");
+
+                //Text: make a zip and clear the work folder
                 Console.WriteLine("Making the Text folder .zip \r\n");
                 string textOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Text");
                 Directory.CreateDirectory(textOutput);
-                ZipFile.CreateFromDirectory(textInput, Path.Combine(textOutput, "Text.zip"));
+                ZipFile.CreateFromDirectory(workFolder, Path.Combine(textOutput, "Text.zip"));
+                Directory.Delete(workFolder, true);
             }
 
 
@@ -96,11 +103,28 @@ namespace ReleaseToolHS2
             string textureInput = Path.Combine(inputRoot, "Translation", language, "Texture");
             if (Directory.Exists(textureInput))
             {
-                //Creating a .zip with Texture folder
+                //Creating a .zip with Texture folders
                 Console.WriteLine("Making the Texture folder .zip \r\n");
                 string textureOutput = Path.Combine(outputRoot, "BepInEx", "Translation", language, "Texture");
+                string workFolder = Path.Combine(outputRoot, "workFolder");
                 Directory.CreateDirectory(textureOutput);
-                ZipFile.CreateFromDirectory(textureInput, Path.Combine(textureOutput, "Texture.zip"));
+                Directory.CreateDirectory(workFolder);
+
+                //Creating a .zip with textures from Texture root folder
+                foreach (var rootTexture in Directory.GetFiles(textureInput, "*.png"))
+                {
+                    File.Copy(rootTexture, Path.Combine(workFolder, Path.GetFileName(rootTexture)));
+                }
+                if (Directory.GetFiles(workFolder, "*.png").Any())
+                    ZipFile.CreateFromDirectory(workFolder, Path.Combine(textureOutput, "Texture.zip"));
+                Directory.Delete(workFolder, true);
+
+                //Creating one .zip for each folder in Texture
+                foreach (var subDirTexure in Directory.GetDirectories(textureInput))
+                {
+                    string outputFile = textureOutput + "\\" + Path.GetFileName(subDirTexure) + ".zip";
+                    ZipFile.CreateFromDirectory(subDirTexure, outputFile);
+                }
             }
 
 

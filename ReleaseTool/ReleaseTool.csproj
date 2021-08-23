@@ -6,8 +6,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{E25213CB-07FC-4B1D-8086-0B682496C8B6}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>ReleaseToolHS2</RootNamespace>
-    <AssemblyName>ReleaseToolHS2</AssemblyName>
+    <RootNamespace>ReleaseTool</RootNamespace>
+    <AssemblyName>ReleaseTool</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
@@ -44,7 +44,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ReleaseToolHS2.cs" />
+    <Compile Include="ReleaseTool.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

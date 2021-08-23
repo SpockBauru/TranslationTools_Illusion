@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DeleteDuplicates", "DeleteD
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TranslateDuplicates", "TranslateDuplicates\TranslateDuplicates.csproj", "{B4F89D8A-935D-47B8-A8AB-4D9A16745DBF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReleaseToolHS2", "ReleaseToolHS2\ReleaseToolHS2.csproj", "{E25213CB-07FC-4B1D-8086-0B682496C8B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReleaseTool", "ReleaseTool\ReleaseTool.csproj", "{E25213CB-07FC-4B1D-8086-0B682496C8B6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MachineTranslate", "MachineTranslate\MachineTranslate.csproj", "{5915BC85-75A5-4441-8FF8-D2897BD4CB70}"
 EndProject
