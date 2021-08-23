@@ -13,9 +13,9 @@
 
   Drag and drop the GitHub project folder on "ReleaseToolHS2.exe".
 
-  **IMPORTANT:** The file `config\ AutoTranslatorConfig.ini` must have the Language key configured correctly.
+  **IMPORTANT:** The file `config\AutoTranslatorConfig.ini` must have the Language key configured correctly.
 
-  **v2 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r5)**
+  **v3 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r10)**
   
 ## MTL Duplicates
 
