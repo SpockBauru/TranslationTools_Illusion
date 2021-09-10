@@ -119,7 +119,7 @@ namespace MissingMTL
 
             for (int i = 0; i < toTranslateSize; i++)
             {
-                string line = toTranslate.ElementAt(i).Key;
+                string line = toTranslate.ElementAt(i).Key + "=";
 
                 File.AppendAllText(outputFile, line + Environment.NewLine);
 
@@ -127,6 +127,13 @@ namespace MissingMTL
                 Console.Write(displayCount);
             }
             Console.WriteLine();
+            //==================== Ending Console Dialogues ====================
+            stopWatch.Stop();
+
+            string display = "Elapsed time " + stopWatch.Elapsed;
+            Console.WriteLine(display);
+            Console.WriteLine("Press any key to exit");
+            Console.ReadKey();
         }
 
 
