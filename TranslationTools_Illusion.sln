@@ -17,6 +17,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StyleCheck", "StyleCheck\St
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MTL_Duplicates", "MTL_Duplicates\MTL_Duplicates.csproj", "{214DD058-449E-45A8-8A30-ABED51F46EFB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MissingMTL", "MissingMTL\MissingMTL.csproj", "{0BF9598C-B893-4FEE-8937-2770C3B1A742}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{214DD058-449E-45A8-8A30-ABED51F46EFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{214DD058-449E-45A8-8A30-ABED51F46EFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{214DD058-449E-45A8-8A30-ABED51F46EFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0BF9598C-B893-4FEE-8937-2770C3B1A742}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0BF9598C-B893-4FEE-8937-2770C3B1A742}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0BF9598C-B893-4FEE-8937-2770C3B1A742}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0BF9598C-B893-4FEE-8937-2770C3B1A742}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
