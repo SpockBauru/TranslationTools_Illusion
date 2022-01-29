@@ -15,15 +15,15 @@ namespace StyleCheck
         {
             //==================== Folder Management ====================
             //Read Folder with text to be translated
-            string mainFile;
+            string mainFolder;
 
-            if (args.Length != 0) { mainFile = args[0]; }
+            if (args.Length != 0) { mainFolder = args[0]; }
             else
             {
                 Console.Write("Enter the source file path: ");
-                mainFile = Console.ReadLine();
+                mainFolder = Console.ReadLine();
                 Console.WriteLine();
-                if (string.IsNullOrEmpty(mainFile))
+                if (string.IsNullOrEmpty(mainFolder))
                 {
                     Console.Write("Invalid");
                     Console.ReadKey();
@@ -34,10 +34,14 @@ namespace StyleCheck
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
 
+            //get data from main folder
+            DirectoryInfo currDir = new DirectoryInfo(mainFolder);
+            Console.WriteLine(currDir.FullName);
+
             //check if folder exists
-            if (!File.Exists(mainFile))
+            if (!currDir.Exists)
             {
-                Console.WriteLine("File Not Found.");
+                Console.WriteLine("Folder Not Found.");
                 Console.ReadKey();
                 Environment.Exit(0);
             }
@@ -102,17 +106,41 @@ namespace StyleCheck
                 }
             }
 
-
             //==================== Making the substitutions ====================
-            string display = "Making substitutions in " + mainFile;
+
+            //Getting all files from folder
+            FileInfo[] allFiles = currDir.GetFiles("*.txt", SearchOption.AllDirectories);
+
+            foreach (FileInfo fileName in allFiles)
+            {
+                string text = "Making substitutions in " + fileName.FullName;
+                Console.WriteLine(text);
+                StyleCheckFile(fileName.FullName, substitutionsLenght, substitutionsFrom, substitutionsTo);
+            }
+
+
+            //==================== Ending Console Dialogues ====================
+            stopWatch.Stop();
+
+            string display = "Elapsed time " + stopWatch.Elapsed;
             Console.WriteLine(display);
+            Console.WriteLine("Press ENTER to exit");
+            Console.ReadLine();
+        }
+
+
+        //Make substitutions in the current file
+        static void StyleCheckFile(string file, int substitutionsLenght, string[] substitutionsFrom, string[] substitutionsTo)
+        {
             //Reading the file
-            string[] allText = File.ReadAllLines(mainFile);
+            string[] allText = File.ReadAllLines(file);
+            bool changedFile = false;
 
             //Substituting according rules in substitution.txt
             for (int i = 0; i < allText.Length; i++)
             {
                 string line = allText[i];
+                string lineOld = line;
                 if (!string.IsNullOrEmpty(line))
                 {
                     char[] separator = new char[] { '=' };
@@ -143,20 +171,18 @@ namespace StyleCheck
                         line = key + "=" + text;
                     }
                 }
-                allText[i] = line;
+
+                if (lineOld != line)
+                {
+                    changedFile = true;
+                    allText[i] = line;
+                }                
             }
 
             //==================== Writing final file ====================
-            string outputFile = mainFile.Replace(".txt", "_Cleaned.txt");
-            File.WriteAllLines(outputFile, allText);
-
-            //==================== Ending Console Dialogues ====================
-            stopWatch.Stop();
-
-            display = "Elapsed time " + stopWatch.Elapsed;
-            Console.WriteLine(display);
-            Console.WriteLine("Press ENTER to exit");
-            Console.ReadLine();
+            //string outputFile = file.Replace(".txt", "_Cleaned.txt");
+            if (changedFile)
+                File.WriteAllLines(file, allText);
         }
     }
 }
