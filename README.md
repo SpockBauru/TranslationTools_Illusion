@@ -26,7 +26,7 @@
   1) In files `translation.txt`: Checks if an commented line has been translated in other `translation.txt` file and writes that translation. Also check if there are duplicated translations and update to the newest version (based on the file date/time).
   2) In files `zz_machineTranslation.txt`: If there is any translation that's also present in any file `translation.txt`, the translation in `zz_machineTranslation.txt` will be commented.
   
-  **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r9)**
+  **v1 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r9)**
 
 ## SplitMTL
 
@@ -43,7 +43,7 @@
 
   After that you can inspect the files "zz_machineTranslation.txt" and copy to the source folder.
 
-**v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r6)**
+**v1 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r6)**
 
 ## StyleCheck
 
@@ -60,7 +60,7 @@
      All rules will be implemented following the order in this file, so order matters.
   2) Drag and drop the desired file in "StyleCheck.exe"
 
-  **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r7)**
+  **v2 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r11**
 
 ## MachineTranslate
 
@@ -90,16 +90,16 @@
   5) Substitutes all strings using Substitutions.txt. (useful for style check)
   6) The final file is saved as "MachineTranslation\MachineTranslationsFinal.txt".
 
-**v2 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r8)**
+**v2 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r8)**
 
 ## Translate Duplicates
 
   Searches an entire folder if an untranslated line has been translated in other place and writes that translation. If there are several translations for the same sentence, only the first one is used. Useful for RedirectedResources folder. Use with caution!
 
-  **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r2)**
+  **v1 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r2)**
 
 ## Delete Duplicates
 
   Create a new file without duplicated lines. Its a way faster than Notepad++
 
-  **v1 - [Download](https://github.com/SpockBauru/TranslationToolsHS2/releases/tag/r1)**
+  **v1 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r1)**
