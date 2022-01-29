@@ -60,7 +60,7 @@
      All rules will be implemented following the order in this file, so order matters.
   2) Drag and drop the desired file in "StyleCheck.exe"
 
-  **v2 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r11**
+  **v2 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r11)**
 
 ## MachineTranslate
 
