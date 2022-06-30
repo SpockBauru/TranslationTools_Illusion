@@ -84,7 +84,7 @@ namespace MTL_Duplicates
             Console.WriteLine("Finished!");
             stopWatch.Stop();
             Console.WriteLine("Time Spent:" + stopWatch.Elapsed);
-            Console.ReadKey();
+            Console.ReadLine();
         }
 
         static void UpdateDictionary(string fileName)
