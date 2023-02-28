@@ -3,6 +3,10 @@
 ##
 ## Get latest from https://github.com/github/gitignore/blob/master/VisualStudio.gitignore
 
+# BepInEx
+HS2Libs/
+RoomGirlLibs/
+
 # User-specific files
 *.rsuser
 *.suo
