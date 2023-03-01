@@ -4,6 +4,7 @@ using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Collections.Generic;
+using System.Linq;
 
 // BepInEx
 using BepInEx;
@@ -11,13 +12,14 @@ using BepInEx.IL2CPP;
 using BepInEx.Logging;
 
 // Unity
+using UnityEngine;
 using UnityEngine.SceneManagement;
 
 // Game specific
+using RG;
 using ADV;
 using Illusion.Unity;
 using HDataClass;
-using System.Linq;
 
 namespace RG_TextDump
 {
@@ -52,8 +54,6 @@ namespace RG_TextDump
         {
             if (scene.name != "Title") return;
 
-
-
             Log.LogMessage("Dumping ADV");
             DumpADV();
             Log.LogMessage("Dumping Subtitles");
@@ -69,7 +69,7 @@ namespace RG_TextDump
 
                 var bundleList = CommonLib.GetAssetBundleNameListFromPath("adv\\scenario", subdirCheck: true);
                 string currentText;
-                bool hasText = false;
+                bool hasText;
 
                 foreach (string bundle in bundleList)
                 {
@@ -77,7 +77,7 @@ namespace RG_TextDump
                     ScenarioData[] allAssets = AssetBundleManager.LoadAllAsset(bundle, UnhollowerRuntimeLib.Il2CppType.Of<ScenarioData>()).GetAllAssets<ScenarioData>();
                     foreach (ScenarioData scenarioData in allAssets)
                     {
-                        hasText = false;
+                        //hasText = false;
                         foreach (ScenarioData.Param param in scenarioData.list)
                         {
                             var args = param.Args;
@@ -100,23 +100,22 @@ namespace RG_TextDump
                             }
                         }
                         // One folder per asset
-                        if (hasText)
-                        {
-                            string path = "TextDump\\" + Path.GetDirectoryName(bundle) + "\\" + Path.GetFileNameWithoutExtension(bundle) + "\\" + scenarioData.name;
-                            path = path + "\\translation.txt";
-                            WriteFile(path, advHash);
-                            advHash.Clear();
-                        }
+                        //if (hasText)
+                        //{
+                        //    string path = "TextDump\\" + Path.GetDirectoryName(bundle) + "\\" + Path.GetFileNameWithoutExtension(bundle) + "\\" + scenarioData.name;
+                        //    path = path + "\\translation.txt";
+                        //    WriteFile(path, advHash);
+                        //    advHash.Clear();
+                        //}
                     }
                     // One folder per bundle
-                    //if (hasText)
-                    //{
-                    //    string path = "TextDump\\" + Path.GetDirectoryName(bundle) + "\\" + Path.GetFileNameWithoutExtension(bundle);
-                    //    Debug.Log(path);
-                    //    path = path + "\\translation.txt";
-                    //    WriteFile(path, advHash);
-                    //    advHash.Clear();
-                    //}
+                    if (hasText)
+                    {
+                        string path = "TextDump\\" + Path.GetDirectoryName(bundle) + "\\" + Path.GetFileNameWithoutExtension(bundle);
+                        path = path + "\\translation.txt";
+                        WriteFile(path, advHash);
+                        advHash.Clear();
+                    }
                     AssetBundleManager.UnloadAssetBundle(bundle, isUnloadForceRefCount: false);
                 }
 
