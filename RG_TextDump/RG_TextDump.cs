@@ -57,7 +57,7 @@ namespace RG_TextDump
 
             Log.LogMessage("Dumping ADV");
             DumpADV();
-            
+
             Log.LogMessage("Dumping H-Scene Subtitles");
             DumpHSubtitles();
 
@@ -194,12 +194,6 @@ namespace RG_TextDump
             isSubtitleDumped = true;
         }
 
-        public static void WriteFile(string path, List<string> textList)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllLines(path, textList, Encoding.UTF8);
-        }
-
         public static class DumpActionSubtitles
         {
             [HarmonyPostfix]
@@ -215,8 +209,8 @@ namespace RG_TextDump
                 {
                     actionSubtitles = File.ReadAllLines(path).ToList();
                 }
-                else 
-                { 
+                else
+                {
                     actionSubtitles = new List<string>(header);
                     Directory.CreateDirectory(Path.GetDirectoryName(path));
                 }
