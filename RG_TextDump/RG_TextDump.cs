@@ -23,6 +23,7 @@ using ADV;
 using Illusion.Unity;
 using HDataClass;
 using Illusion.Extensions;
+using RG.Scene.Action;
 
 namespace RG_TextDump
 {
@@ -39,6 +40,7 @@ namespace RG_TextDump
 
         static bool isAdvDumped = false;
         static bool isSubtitleDumped = false;
+        static int topicNumber = 0;
 
         static string[] header = {"//",
                                   "// Dumped With RG_TextDump v" + Version,
@@ -57,12 +59,16 @@ namespace RG_TextDump
 
             Log.LogMessage("Dumping ADV");
             DumpADV();
-
+            
             Log.LogMessage("Dumping H-Scene Subtitles");
             DumpHSubtitles();
-
+            
             Log.LogMessage("Dumping Action Subtitles");
             Harmony.CreateAndPatchAll(typeof(DumpActionSubtitles), GUID);
+
+            // Not finished
+            Log.LogMessage("Dumping Topics");
+            Harmony.CreateAndPatchAll(typeof(DumpTopics), GUID);
         }
 
         private void DumpADV()
@@ -124,7 +130,7 @@ namespace RG_TextDump
                     // One folder per bundle
                     if (hasText)
                     {
-                        string path = "TextDump\\" + Path.GetDirectoryName(bundle) + "\\" + Path.GetFileNameWithoutExtension(bundle);
+                        string path = "TextDump\\" + "ADV\\" + "abdata\\" + Path.GetDirectoryName(bundle) + "\\" + Path.GetFileNameWithoutExtension(bundle);
                         path = path + "\\translation.txt";
                         Directory.CreateDirectory(Path.GetDirectoryName(path));
                         File.WriteAllLines(path, advList, Encoding.UTF8);
@@ -146,7 +152,7 @@ namespace RG_TextDump
             List<string> hSubtitleList = new List<string>(header);
 
             // Getting all bundles (.unity3d files) from folder
-            var bundleList = CommonLib.GetAssetBundleNameListFromPath("..\\abdata\\list\\h\\sound\\voice", subdirCheck: true);
+            var bundleList = CommonLib.GetAssetBundleNameListFromPath("list\\h\\sound\\voice", subdirCheck: true);
             string currentText;
             bool hasText;
 
@@ -177,12 +183,10 @@ namespace RG_TextDump
                     // One folder per asset
                     if (hasText)
                     {
-                        string filePath = Regex.Replace(bundle, "^\\.\\.", "");
-                        filePath = "TextDump" + Path.GetDirectoryName(filePath) + "\\" + Path.GetFileNameWithoutExtension(filePath) + "\\" + voiceData.name;
-                        //Directory.CreateDirectory(path);
+                        string filePath = "TextDump\\" + "H_Subtitles\\" + "abdata\\" + Path.GetDirectoryName(bundle) + "\\" + Path.GetFileNameWithoutExtension(bundle) + "\\" + voiceData.name;
+                        Directory.CreateDirectory(filePath);
 
                         filePath = filePath + "\\translation.txt";
-                        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
                         File.WriteAllLines(filePath, hSubtitleList, Encoding.UTF8);
                         hSubtitleList.Clear();
                     }
@@ -200,7 +204,7 @@ namespace RG_TextDump
             [HarmonyPatch(typeof(ActionSubtitleTable), nameof(ActionSubtitleTable.Load))]
             public static void DumpAction(Define.TableData.Category category, ActionSubtitleTable __instance)
             {
-                string path = "TextDump\\ActionSubtitles\\translation.txt";
+                string path = "TextDump\\Action_Subtitles\\translation.txt";
 
                 // Using List instead of HashSet because order matters
                 List<string> actionSubtitles;
@@ -264,6 +268,44 @@ namespace RG_TextDump
                     }
                 }
                 File.WriteAllLines(path, actionSubtitles);
+            }
+        }
+
+        public static class DumpTopics
+        {
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(TopicTableData.TopicTableInfo), nameof(TopicTableData.TopicTableInfo.Set))]
+            public static void Topics(TopicTableData.TopicTableInfo __instance)
+            {
+                List<string> topicsList;
+                string path = "TextDump\\Topics\\translation.txt";
+
+                if (File.Exists(path))
+                {
+                    topicsList = File.ReadAllLines(path).ToList();
+                }
+                else
+                {
+                    topicsList = new List<string>(header);
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                }
+
+                topicNumber++;
+                Debug.Log("Topic number: " + topicNumber);
+
+                var voiceText = __instance.VoiceText;
+                if (string.IsNullOrEmpty(voiceText)) return;
+
+                // Fix when Illusion adds newline that don't play well with xUnity Autotranslator.
+                voiceText = voiceText.Replace("\n", "\\n");
+                // add comment in the beginning and = in the end
+                voiceText = "//" + voiceText + "=";
+                if (!topicsList.Contains(voiceText))
+                {
+                    topicsList.Add(voiceText);
+                }
+
+                File.WriteAllLines(path, topicsList);
             }
         }
     }
