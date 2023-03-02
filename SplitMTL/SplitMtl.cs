@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 namespace SplitMTL
 {
@@ -110,7 +111,8 @@ namespace SplitMTL
                     {
                         if ((!string.IsNullOrEmpty(line)) && line.StartsWith("//") && line.Contains("="))
                         {
-                            string outputLine = line.Replace("/", "");
+                            //string outputLine = line.Replace("/", "");
+                            string outputLine = Regex.Replace(line, "^//", "");
                             char[] separator = new char[] { '=' };
                             string[] parts = outputLine.Split(separator, 2);
 
@@ -125,14 +127,20 @@ namespace SplitMTL
 
                                     value = allTranslated[key];
                                     outputLine = key + "=" + value;
-                                    outputFile.Add(outputLine);
                                 }
+                                else
+                                {
+                                    outputLine = "//" + key + "=";
+                                }
+
+                                outputFile.Add(outputLine);
                             }
                         }
+                        else outputFile.Add(line);
                     }
 
                     //writing file to a new dir
-                    if (!isTranslated)
+                    //if (!isTranslated)
                     {
                         string outputPath = currentFile.Replace(mainFolder, outputFolder);
                         outputPath = outputPath.Replace("translation.txt", "zz_machineTranslation.txt");

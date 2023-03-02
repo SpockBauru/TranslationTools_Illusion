@@ -10,6 +10,7 @@ using System.Linq;
 using BepInEx;
 using BepInEx.IL2CPP;
 using BepInEx.Logging;
+using HarmonyLib;
 
 // Unity
 using UnityEngine;
@@ -17,13 +18,14 @@ using UnityEngine.SceneManagement;
 
 // Game specific
 using RG;
+using RG.Scripts;
 using ADV;
 using Illusion.Unity;
 using HDataClass;
+using Illusion.Extensions;
 
 namespace RG_TextDump
 {
-
     [BepInProcess("RoomGirl")]
     [BepInPlugin(GUID, PluginName, Version)]
     public class RG_TextDump : BasePlugin
@@ -35,38 +37,43 @@ namespace RG_TextDump
 
         internal static new ManualLogSource Log;
 
-        static HashSet<string> subtitleHash = new HashSet<string>();
-        static HashSet<string> advHash = new HashSet<string>();
         static bool isAdvDumped = false;
         static bool isSubtitleDumped = false;
 
-        string[] header = {"//",
-                           "// Dumped With RG_TextDump v" + Version,
-                           "//" };
+        static string[] header = {"//",
+                                  "// Dumped With RG_TextDump v" + Version,
+                                  "//" };
 
         public override void Load()
         {
-            SceneManager.add_sceneLoaded(new Action<Scene, LoadSceneMode>(StartDump));
             Log = base.Log;
+            SceneManager.add_sceneLoaded(new Action<Scene, LoadSceneMode>(StartDump));
         }
 
+        // Start dumping when Title Scene loads
         private void StartDump(Scene scene, LoadSceneMode lsm)
         {
             if (scene.name != "Title") return;
 
             Log.LogMessage("Dumping ADV");
             DumpADV();
-            Log.LogMessage("Dumping Subtitles");
-            DumpSubtitles();
-            Log.LogMessage("Dump Finalized");
+            
+            Log.LogMessage("Dumping H-Scene Subtitles");
+            DumpHSubtitles();
+
+            Log.LogMessage("Dumping Action Subtitles");
+            Harmony.CreateAndPatchAll(typeof(DumpActionSubtitles), GUID);
         }
 
         private void DumpADV()
         {
             {
                 if (isAdvDumped) return;
-                //ReadTranslation(advFile, advHash);
 
+                // Using List instead of HashSet because order matters
+                List<string> advList = new List<string>(header);
+
+                // Getting all bundles (.unity3d files) from folder
                 var bundleList = CommonLib.GetAssetBundleNameListFromPath("adv\\scenario", subdirCheck: true);
                 string currentText;
                 bool hasText;
@@ -74,6 +81,8 @@ namespace RG_TextDump
                 foreach (string bundle in bundleList)
                 {
                     hasText = false;
+
+                    // Getting all assets from bundle that are the type ScenarioData
                     ScenarioData[] allAssets = AssetBundleManager.LoadAllAsset(bundle, UnhollowerRuntimeLib.Il2CppType.Of<ScenarioData>()).GetAllAssets<ScenarioData>();
                     foreach (ScenarioData scenarioData in allAssets)
                     {
@@ -83,18 +92,22 @@ namespace RG_TextDump
                             var args = param.Args;
                             for (int j = 0; j < args.Length; j++)
                             {
-                                // If this line is [H] and the following line contains japanese characters
+                                // If current line is [H] and the following line contains japanese characters
                                 if (args[j].StartsWith("[H]"))
                                 {
                                     currentText = args[j + 1];
                                     if (Regex.IsMatch(currentText, "[一-龠]+|[ぁ-ゔ]+|[ァ-ヴー]+|[々〆〤ヶ]+"))
                                     {
                                         hasText = true;
-                                        if (!advHash.Contains(currentText))
-                                        {
-                                            advHash.Add(currentText);
-                                        }
 
+                                        // Fix when Illusion adds newline that don't play well with xUnity Autotranslator.
+                                        currentText = currentText.Replace("\n", "\\n");
+                                        // add comment in the beginning and = in the end
+                                        currentText = "//" + currentText + "=";
+                                        if (!advList.Contains(currentText))
+                                        {
+                                            advList.Add(currentText);
+                                        }
                                     }
                                 }
                             }
@@ -104,8 +117,8 @@ namespace RG_TextDump
                         //{
                         //    string path = "TextDump\\" + Path.GetDirectoryName(bundle) + "\\" + Path.GetFileNameWithoutExtension(bundle) + "\\" + scenarioData.name;
                         //    path = path + "\\translation.txt";
-                        //    WriteFile(path, advHash);
-                        //    advHash.Clear();
+                        //    WriteFile(path, advList);
+                        //    advList.Clear();
                         //}
                     }
                     // One folder per bundle
@@ -113,30 +126,33 @@ namespace RG_TextDump
                     {
                         string path = "TextDump\\" + Path.GetDirectoryName(bundle) + "\\" + Path.GetFileNameWithoutExtension(bundle);
                         path = path + "\\translation.txt";
-                        WriteFile(path, advHash);
-                        advHash.Clear();
+                        Directory.CreateDirectory(Path.GetDirectoryName(path));
+                        File.WriteAllLines(path, advList, Encoding.UTF8);
+                        advList.Clear();
                     }
                     AssetBundleManager.UnloadAssetBundle(bundle, isUnloadForceRefCount: false);
                 }
 
                 // One big file for everything
-                //WriteFile(advFile, advHash);
+                //WriteFile(advFile, advList);
                 isAdvDumped = true;
             }
         }
 
-        private void DumpSubtitles()
+        private void DumpHSubtitles()
         {
             if (isSubtitleDumped) return;
-            //ReadTranslation(advFile, advHash);
 
-            // .unity3d files
+            List<string> hSubtitleList = new List<string>(header);
+
+            // Getting all bundles (.unity3d files) from folder
             var bundleList = CommonLib.GetAssetBundleNameListFromPath("..\\abdata\\list\\h\\sound\\voice", subdirCheck: true);
             string currentText;
             bool hasText;
 
             foreach (string bundle in bundleList)
             {
+                // Getting all assets from bundle that are the type VoiceData
                 VoiceData[] allAssets = AssetBundleManager.LoadAllAsset(bundle, UnhollowerRuntimeLib.Il2CppType.Of<VoiceData>()).GetAllAssets<VoiceData>();
 
                 foreach (VoiceData voiceData in allAssets)
@@ -148,9 +164,14 @@ namespace RG_TextDump
                             {
                                 currentText = infoDetail.Word;
                                 hasText = true;
-                                if (!subtitleHash.Contains(currentText))
+
+                                // Fix when Illusion adds newline that don't play well with xUnity Autotranslator.
+                                currentText = currentText.Replace("\n", "\\n");
+                                // add comment in the beginning and = in the end
+                                currentText = "//" + currentText + "=";
+                                if (!hSubtitleList.Contains(currentText))
                                 {
-                                    subtitleHash.Add(currentText);
+                                    hSubtitleList.Add(currentText);
                                 }
                             }
                     // One folder per asset
@@ -161,44 +182,95 @@ namespace RG_TextDump
                         //Directory.CreateDirectory(path);
 
                         filePath = filePath + "\\translation.txt";
-                        WriteFile(filePath, subtitleHash);
-                        subtitleHash.Clear();
+                        Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+                        File.WriteAllLines(filePath, hSubtitleList, Encoding.UTF8);
+                        hSubtitleList.Clear();
                     }
                 }
                 AssetBundleManager.UnloadAssetBundle(bundle, isUnloadForceRefCount: false);
             }
             // One big file for everything
-            //WriteFile(subtitleFile, subtitleHash);
+            //WriteFile(subtitleFile, hSubtitleList);
             isSubtitleDumped = true;
         }
 
-        void ReadTranslation(string path, HashSet<string> hashSet)
-        {
-            if (!File.Exists(path)) return;
-            string[] allLines = File.ReadAllLines(path);
-            for (int i = 0; i < allLines.Length; i++)
-            {
-                allLines[i] = Regex.Replace(allLines[i], "^//", "");
-                allLines[i] = Regex.Replace(allLines[i], "=$", "");
-            }
-            hashSet.Clear();
-            hashSet.UnionWith(allLines);
-        }
-
-        void WriteFile(string path, HashSet<string> hashSet)
+        public static void WriteFile(string path, List<string> textList)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path));
-            string[] stringArray = new string[hashSet.Count];
-            hashSet.CopyTo(stringArray);
-            for (int i = 0; i < stringArray.Length; i++)
+            File.WriteAllLines(path, textList, Encoding.UTF8);
+        }
+
+        public static class DumpActionSubtitles
+        {
+            [HarmonyPostfix]
+            [HarmonyPatch(typeof(ActionSubtitleTable), nameof(ActionSubtitleTable.Load))]
+            public static void DumpAction(Define.TableData.Category category, ActionSubtitleTable __instance)
             {
-                stringArray[i] = stringArray[i].Replace("\n", "\\n");
-                stringArray[i] = "//" + stringArray[i] + "=";
+                string path = "TextDump\\ActionSubtitles\\translation.txt";
+
+                // Using List instead of HashSet because order matters
+                List<string> actionSubtitles;
+
+                if (File.Exists(path))
+                {
+                    actionSubtitles = File.ReadAllLines(path).ToList();
+                }
+                else 
+                { 
+                    actionSubtitles = new List<string>(header);
+                    Directory.CreateDirectory(Path.GetDirectoryName(path));
+                }
+
+                // Including asset name
+                actionSubtitles.Add("\r\n//" + category.ToString() + "\r\n");
+                Debug.Log("Dumping " + category.ToString());
+
+                var instance = __instance._instance;
+
+                // Behold Illusion recursion insanity: indexes from i to m (5 levels)
+                for (int i = 0; i < instance.Count; i++)
+                {
+                    var dic = instance.GetElement(i).value;
+                    for (int j = 0; j < dic.Count; j++)
+                    {
+                        var element = dic.GetElement(j);
+
+                        // First array
+                        var arrayText = element.AryTextA;
+                        AddAllArray(arrayText);
+
+                        // Second array
+                        arrayText = element.AryTextB;
+                        AddAllArray(arrayText);
+                    }
+                }
+                void AddAllArray(UnhollowerBaseLib.Il2CppReferenceArray<UnhollowerBaseLib.Il2CppReferenceArray<UnhollowerBaseLib.Il2CppStringArray>> arrayText)
+                {
+                    for (int k = 0; k < arrayText.Length; k++)
+                    {
+                        var first = arrayText[k];
+                        for (int l = 0; l < first.Length; l++)
+                        {
+                            var second = first[l];
+                            for (int m = 0; m < second.Length; m++)
+                            {
+                                string subtitle = second[m];
+                                if (string.IsNullOrEmpty(subtitle)) continue;
+
+                                // Fix when Illusion adds newline that don't play well with xUnity Autotranslator.
+                                subtitle = subtitle.Replace("\n", "\\n");
+                                // add comment in the beginning and = in the end
+                                subtitle = "//" + subtitle + "=";
+                                if (!actionSubtitles.Contains(subtitle))
+                                {
+                                    actionSubtitles.Add(subtitle);
+                                }
+                            }
+                        }
+                    }
+                }
+                File.WriteAllLines(path, actionSubtitles);
             }
-
-            string[] fileContent = header.Concat(stringArray).ToArray();
-
-            File.WriteAllLines(path, fileContent, Encoding.UTF8);
         }
     }
 }

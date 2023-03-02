@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="0Harmony, Version=2.10.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RoomGirlLibs\0Harmony.dll</HintPath>
+    </Reference>
     <Reference Include="Assembly-CSharp">
       <HintPath>..\RoomGirlLibs\Assembly-CSharp.dll</HintPath>
     </Reference>
@@ -47,6 +51,8 @@
     <Reference Include="Il2Cppmscorlib">
       <HintPath>..\RoomGirlLibs\Il2Cppmscorlib.dll</HintPath>
     </Reference>
+    <Reference Include="Il2CppSystem, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null" />
+    <Reference Include="Il2CppSystem.Memory, Version=4.0.1.1, Culture=neutral, PublicKeyToken=null" />
     <Reference Include="System" />
     <Reference Include="UnhollowerBaseLib">
       <HintPath>..\RoomGirlLibs\UnhollowerBaseLib.dll</HintPath>

@@ -61,7 +61,7 @@ namespace RG_FixTopic
             {
                 string[] content = File.ReadAllLines(file.FullName);
                 
-                outputContent.Add("\r\n"+file.Name + "\r\n");
+                outputContent.Add("\r\n//"+file.Name + "\r\n");
 
                 // skipping the first line
                 for (int i  = 1; i < content.Length; i++)
