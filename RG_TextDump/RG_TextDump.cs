@@ -24,6 +24,7 @@ using Illusion.Unity;
 using HDataClass;
 using Illusion.Extensions;
 using RG.Scene.Action;
+using BepInEx.Configuration;
 
 namespace RG_TextDump
 {
@@ -36,6 +37,7 @@ namespace RG_TextDump
         public const string PluginName = "RG_TextDump";
         public const string Version = "0.1";
 
+        internal static ConfigEntry<bool> EnableConfig;
         internal static new ManualLogSource Log;
 
         static bool isAdvDumped = false;
@@ -48,8 +50,17 @@ namespace RG_TextDump
 
         public override void Load()
         {
+            EnableConfig = Config.Bind("General",
+                     "Enable TextDump",
+                     false,
+                     "Reload the game to Enable/Disable");
+
             Log = base.Log;
-            SceneManager.add_sceneLoaded(new Action<Scene, LoadSceneMode>(StartDump));
+
+            if (EnableConfig.Value)
+            {
+                SceneManager.add_sceneLoaded(new Action<Scene, LoadSceneMode>(StartDump));
+            }
         }
 
         // Start dumping when Title Scene loads

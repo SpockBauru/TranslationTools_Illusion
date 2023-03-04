@@ -1,5 +1,17 @@
 # TranslationTools_Illusion
   Translations Tools for Illusion Games
+  
+## Room Girl TextDump
+  Dumps text into .txt files so that the lines can be used by translators working on the translation projects.
+  
+  HOW TO USE
+  1) Extract the file `RG_TextDump_v0.1.zip` to Room Girl's folder.
+  2) Open the game, go to the Configuration Menu (F5 key), go to RG_TextDump, enable the plugin, apply and close the game.
+  3) Open the game with the Console enabled (enable in `initsetting.exe`). It will show the texts of the process, this will take a while.
+  4) After finished the game will start. Go to the Configuration Menu and disable RG_TextDump.
+  5) The dumped files will be at `TextDump` in the game's folder.
+  
+  **v0.1 - [Download](https://github.com/SpockBauru/TranslationTools_Illusion/releases/tag/r12)**
 
 ## ReleaseTool
 
